@@ -214,7 +214,7 @@
 
 			<Separator />
 
-			<Button variant="link" href="/enquete/resultados">Ver resultados</Button>
+			<Button variant="link" href="/app/enquete">Ver resultados</Button>
 		</div>
 	{/if}
 </div>
