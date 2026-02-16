@@ -5,33 +5,36 @@
 World of Warcraft guild roster manager for "Cartel Lucros Taxados" (CLT).
 All user-facing UI text MUST be in **Brazilian Portuguese** (pt-BR).
 Backend uses **Convex** for database/functions and **WorkOS** for authentication.
+Production URL: `https://clt.felipeafonso.com`
 
 ## Tech Stack
 
 - **Framework**: SvelteKit 2 + Svelte 5 (runes only — no legacy syntax)
 - **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS v4 (Vite plugin, NOT PostCSS)
-- **Backend**: Convex (functions, schema, DB)
-- **Auth**: WorkOS via Convex integration
+- **Styling**: Tailwind CSS v4 (Vite plugin, NOT PostCSS) + shadcn-svelte
+- **UI Components**: shadcn-svelte (base color: `stone`, dark mode via `.dark` class)
+- **Icons**: `@lucide/svelte`
+- **Backend**: Convex (functions live in `src/convex/`, NOT root `convex/`)
+- **Auth**: WorkOS via Convex `authKit` integration
 - **Deploy**: Vercel (`@sveltejs/adapter-vercel`)
 - **Package Manager**: Bun
 
 ## Commands
 
 ```bash
-bun run dev          # Start dev server (you should assume this is already running)
+bun run dev          # Start dev server (assume already running)
 bun run build        # Production build
 bun run preview      # Preview production build
 bun run check        # Type-check (svelte-kit sync + svelte-check)
 bun run check:watch  # Type-check in watch mode
 bun run lint         # Prettier --check + ESLint
 bun run format       # Prettier --write
-npx convex dev       # Convex dev server (assume this is already running)
+npx convex dev       # Convex dev server (assume already running)
 ```
 
 ### After Every Session With Code Changes
 
-Always run these before finishing:
+Always run before finishing:
 
 ```bash
 bun run format && bun run lint && bun run check
@@ -49,28 +52,27 @@ No test framework is set up yet. When one is added, update this section.
 - **Single quotes** for strings
 - **No trailing commas**
 - **100-char** print width
-- Tailwind classes are auto-sorted by `prettier-plugin-tailwindcss`
+- Tailwind classes auto-sorted by `prettier-plugin-tailwindcss`
 - Svelte files parsed by `prettier-plugin-svelte`
 
 ### Imports
 
 - Use `$lib/` alias for anything under `src/lib/`
 - Use `$env/static/private` and `$env/static/public` for env vars (public prefix: `PUBLIC_`)
-- Convex imports: use `convex/_generated/api` for function references
-- Group imports: svelte/kit builtins → external packages → `$lib` → relative paths
+- Convex generated imports: `src/convex/_generated/api` (functions are in `src/convex/`)
+- Group imports: svelte/kit builtins -> external packages -> `$lib` -> relative paths
 - No barrel re-exports unless explicitly needed
 
 ### TypeScript
 
-- Strict mode is ON (`strict: true` in tsconfig)
-- `checkJs: true` — JS files are also type-checked
+- Strict mode ON (`strict: true`, `checkJs: true`, `verbatimModuleSyntax: true`)
 - Always use `lang="ts"` in Svelte `<script>` blocks
 - Prefer explicit types for function params and return types
-- Use Convex-generated types for DB schemas (from `convex/_generated/dataModel`)
+- Use Convex-generated types from `src/convex/_generated/dataModel`
 
 ### Svelte 5 Conventions
 
-- **Runes only**: use `$state()`, `$derived()`, `$effect()`, `$props()`, `$bindable()`
+- **Runes only**: `$state()`, `$derived()`, `$effect()`, `$props()`, `$bindable()`
 - **NEVER** use legacy Svelte 4 syntax (`export let`, `$:`, `<slot />`, stores)
 - Use `{@render children()}` instead of `<slot />`
 - Use `{@render snippetName()}` for named slots
@@ -78,7 +80,7 @@ No test framework is set up yet. When one is added, update this section.
 - Prefer `$derived()` over `$effect()` when computing values
 - Use `$effect()` only for true side effects (DOM, timers, subscriptions)
 - Component filenames: PascalCase (e.g., `RosterTable.svelte`)
-- Route files: follow SvelteKit conventions (`+page.svelte`, `+layout.svelte`, etc.)
+- Route files: SvelteKit conventions (`+page.svelte`, `+layout.svelte`, etc.)
 
 ### Naming Conventions
 
@@ -86,7 +88,7 @@ No test framework is set up yet. When one is added, update this section.
 - **Variables/functions**: camelCase
 - **Types/interfaces**: PascalCase
 - **Constants**: camelCase (not UPPER_SNAKE unless truly global config)
-- **CSS classes**: use Tailwind utilities; custom classes in kebab-case
+- **CSS classes**: Tailwind utilities; custom classes in kebab-case
 - **Convex tables**: camelCase plural (e.g., `characters`, `guildMembers`)
 - **Convex functions**: camelCase (e.g., `getCharacter`, `listMembers`)
 
@@ -101,15 +103,15 @@ No test framework is set up yet. When one is added, update this section.
 
 ### Data Flow (Convex + SvelteKit)
 
-- **Always initialize data server-side** in `+page.server.ts` or `+layout.server.ts` load functions
-- Hydrate the client with server-loaded data — never rely on client-only fetching for initial render
-- Use Convex `preloadQuery` on the server, pass preloaded data to client components
-- Client components can then use Convex `useQuery` for real-time subscriptions
-- Mutations use `useMutation` on the client side
+- **Always initialize data server-side** in `+page.server.ts` or `+layout.server.ts`
+- Hydrate the client with server-loaded data — never client-fetch-only for initial render
+- Use Convex `preloadQuery` on server, pass preloaded data to client components
+- Client components use `useQuery` (from `convex-svelte`) for real-time subscriptions
+- Mutations via `useMutation` on the client side
 
 ### Authentication (WorkOS)
 
-- Auth state should be checked in hooks (`hooks.server.ts`)
+- Auth state checked in hooks (`hooks.server.ts`)
 - Protected routes use `locals` to pass user/session info
 - WorkOS session tokens validated server-side
 
@@ -119,36 +121,53 @@ No test framework is set up yet. When one is added, update this section.
 - Use `+page.server.ts` for server-only load functions (DB queries, auth checks)
 - Use `+page.ts` only when data can be loaded on both client and server
 
+### UI Components (shadcn-svelte)
+
+- Components install to `$lib/components/ui/` via shadcn-svelte CLI
+- Use `cn()` from `$lib/utils` for conditional class merging (clsx + tailwind-merge)
+- Use `tailwind-variants` for component variant APIs
+- Type helpers available in `$lib/utils`: `WithoutChild`, `WithoutChildren`, `WithElementRef`
+- Theme uses `oklch()` color space with CSS custom properties (light/dark)
+- Dark mode: `@custom-variant dark (&:is(.dark *))` in Tailwind v4
+
 ### Styling
 
 - Tailwind CSS v4 syntax: `@import 'tailwindcss'` in CSS files
-- Plugins via `@plugin` directive (e.g., `@plugin '@tailwindcss/typography'`)
+- Global styles and theme in `src/routes/layout.css`
 - Prefer Tailwind utilities over custom CSS
-- Use `@theme` for custom design tokens when needed
+- Custom design tokens via `@theme inline` block in layout.css
+- Base border radius: `--radius: 0.625rem` with computed variants (sm, md, lg, xl)
+- Animation utilities from `tw-animate-css`
 
-## Svelte MCP Tools
+### Environment Variables
 
-You have access to the Svelte MCP server with comprehensive Svelte 5 and SvelteKit docs:
+- `PUBLIC_CONVEX_URL` / `PUBLIC_CONVEX_SITE_URL` — client-safe Convex URLs
+- `CONVEX_DEPLOY_KEY` / `CONVEX_DEPLOYMENT` — server-only
+- WorkOS vars injected via Convex authKit config at runtime
 
-### 1. list-sections
+## MCP Tools
 
-Use FIRST to discover available documentation sections. Returns titles, use_cases, and paths.
-Always call this at the start of a chat involving Svelte/SvelteKit topics.
+### Svelte MCP
 
-### 2. get-documentation
+If available, use the Svelte MCP server for docs:
 
-Retrieves full docs for specific sections. Accepts single or array of section names.
-After `list-sections`, analyze use_cases and fetch ALL relevant sections for the task.
+1. **list-sections** — discover available docs. Call FIRST for Svelte/SvelteKit tasks.
+2. **get-documentation** — fetch full docs for specific sections by title or path.
+3. **svelte-autofixer** — analyze Svelte code for issues. MUST use before finalizing any Svelte code. Keep calling until zero issues remain.
+4. **playground-link** — generate Svelte Playground link. NEVER use if code was written to project files.
 
-### 3. svelte-autofixer
+### Convex MCP
 
-Analyzes Svelte code for issues. **MUST** be used before sending any Svelte code.
-Keep calling until zero issues/suggestions remain.
+If available, use the Convex MCP server for backend tasks. Pass `projectDir` as the repo root.
 
-### 4. playground-link
-
-Generates a Svelte Playground link. Ask the user first.
-NEVER use if the code was written to files in the project.
+1. **convex_status** — list deployments (dev/prod). Returns deployment selectors for other tools. Default to the dev deployment unless debugging production.
+2. **convex_tables** — list all tables with inferred and declared schema.
+3. **convex_data** — read paginated data from a table (supports cursor, limit, order).
+4. **convex_functionSpec** — get metadata for all functions (path, args, return type, visibility).
+5. **convex_run** — execute a query, mutation, or action on a deployment.
+6. **convex_runOneoffQuery** — run a sandboxed read-only query (useful for ad-hoc data inspection).
+7. **convex_logs** — fetch recent UDF execution logs for debugging.
+8. **convex_envList / convex_envGet / convex_envSet / convex_envRemove** — manage environment variables.
 
 ## Key Reminders
 
@@ -157,3 +176,5 @@ NEVER use if the code was written to files in the project.
 - Always run `bun run format && bun run lint && bun run check` after code changes
 - Server-side data initialization is mandatory — hydrate the client, never client-fetch-only
 - Svelte 5 runes only — zero legacy syntax
+- Convex functions live in `src/convex/`, not root-level `convex/`
+- ESM project (`"type": "module"` in package.json)
