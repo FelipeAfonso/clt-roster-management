@@ -178,3 +178,58 @@ If available, use the Convex MCP server for backend tasks. Pass `projectDir` as 
 - Svelte 5 runes only — zero legacy syntax
 - Convex functions live in `src/convex/`, not root-level `convex/`
 - ESM project (`"type": "module"` in package.json)
+
+## Portuguese Text Guidelines
+
+**IMPORTANT**: All user-facing Portuguese text in `.svelte` files MUST use HTML entities for accented characters. Do NOT use direct Unicode characters.
+
+| Character | Entity     | Example                   |
+| --------- | ---------- | ------------------------- |
+| á         | `&aacute;` | Cris&aacute;lida          |
+| é         | `&eacute;` | s&eacute;rie              |
+| í         | `&iacute;` | cl&iacute;nica            |
+| ó         | `&oacute;` | Diagn&oacute;stico        |
+| ú         | `&uacute;` | sa&uacute;de              |
+| ã         | `&atilde;` | evolu&ccedil;&atilde;o    |
+| õ         | `&otilde;` | Informa&ccedil;&otilde;es |
+| ê         | `&ecirc;`  | Frequ&ecirc;ncia          |
+| ç         | `&ccedil;` | a&ccedil;&atilde;o        |
+
+**Common words:**
+
+- Informações → `Informa&ccedil;&otilde;es`
+- evolução → `evolu&ccedil;&atilde;o`
+- sessão → `sess&atilde;o`
+- ação → `a&ccedil;&atilde;o`
+- não → `n&atilde;o`
+- configuração → `configura&ccedil;&atilde;o`
+- personagem → already safe (no accented chars)
+- descrição → `descri&ccedil;&atilde;o`
+- Observações → `Observa&ccedil;&otilde;es`
+- responsável → `respons&aacute;vel`
+
+**Note**: Do NOT replace characters in import statements, variable names, or other code identifiers—only user-facing text in the template markup.
+
+### HTML Entities vs Unicode Escapes
+
+**CRITICAL**: HTML entities (`&ccedil;`) only work in **HTML template markup**. Inside JavaScript string expressions (`{expression}`), they render as literal text!
+
+| Context               | Use             | Example                                          |
+| --------------------- | --------------- | ------------------------------------------------ |
+| HTML markup           | HTML entities   | `<h1>Evolu&ccedil;&atilde;o</h1>`                |
+| JS strings in `{...}` | Unicode escapes | `{isLocked ? 'Evolu\u00e7\u00e3o' : 'Editar'}`   |
+| `$derived`, `$state`  | Unicode escapes | `const label = $derived('altera\u00e7\u00f5es')` |
+
+**Unicode escape reference:**
+
+| Character | Unicode  | Example                |
+| --------- | -------- | ---------------------- |
+| á         | `\u00e1` | `respons\u00e1vel`     |
+| é         | `\u00e9` | `s\u00e9rie`           |
+| í         | `\u00ed` | `cl\u00ednica`         |
+| ó         | `\u00f3` | `Diagn\u00f3stico`     |
+| ú         | `\u00fa` | `sa\u00fade`           |
+| ã         | `\u00e3` | `evolu\u00e7\u00e3o`   |
+| õ         | `\u00f5` | `altera\u00e7\u00f5es` |
+| ê         | `\u00ea` | `Frequ\u00eancia`      |
+| ç         | `\u00e7` | `a\u00e7\u00e3o`       |
