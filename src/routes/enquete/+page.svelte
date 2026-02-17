@@ -211,10 +211,6 @@
 					N&atilde;o &eacute; voc&ecirc;? Trocar jogador
 				</Button>
 			</div>
-
-			<Separator />
-
-			<Button variant="link" href="/app/enquete">Ver resultados</Button>
 		</div>
 	{/if}
 </div>

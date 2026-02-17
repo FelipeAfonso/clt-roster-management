@@ -41,6 +41,9 @@ export async function initAuth(clientId: string, convexClient: ConvexClient): Pr
 	try {
 		const client = await createClient(clientId, {
 			redirectUri: `${window.location.origin}/callback`,
+			// In production, third-party cookies for api.workos.com can be blocked.
+			// Using refresh tokens avoids cookie-dependent refresh failures.
+			devMode: true,
 			onRedirectCallback: (params) => {
 				user = params.user;
 				isAuthenticated = true;

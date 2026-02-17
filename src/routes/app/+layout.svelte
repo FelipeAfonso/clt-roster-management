@@ -27,11 +27,9 @@
 {:else if !auth.isAuthenticated}
 	<div class="flex h-screen flex-col items-center justify-center gap-4">
 		<h1 class="text-2xl font-bold">Cartel Lucros Taxados</h1>
-		<p class="text-muted-foreground">
-			Voc&ecirc; precisa estar logado para acessar esta p&aacute;gina.
-		</p>
+		<p class="text-muted-foreground">Voc&ecirc; precisa de acesso para abrir esta p&aacute;gina.</p>
 		<div class="flex gap-2">
-			<Button onclick={() => auth.signIn()}>Entrar</Button>
+			<Button onclick={() => auth.signIn()}>Continuar</Button>
 			<Button variant="outline" onclick={() => auth.signUp()}>Criar conta</Button>
 		</div>
 		<Button variant="link" href="/">Voltar para o in&iacute;cio</Button>

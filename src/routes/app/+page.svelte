@@ -20,12 +20,10 @@
 					<ClipboardList class="size-5 text-muted-foreground" />
 					<Card.Title>Enquete de Raid</Card.Title>
 				</div>
-				<Card.Description>
-					Veja os resultados da enquete de disponibilidade para raid.
-				</Card.Description>
+				<Card.Description>Preencha a enquete de disponibilidade para raid.</Card.Description>
 			</Card.Header>
 			<Card.Footer>
-				<Button href="/app/enquete" size="sm">Ver resultados</Button>
+				<Button href="/enquete" size="sm">Responder enquete</Button>
 			</Card.Footer>
 		</Card.Root>
 	</div>
