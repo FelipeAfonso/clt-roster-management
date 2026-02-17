@@ -7,6 +7,7 @@ let authClient = $state<AuthKitClient | null>(null);
 let user = $state<User | null>(null);
 let isLoading = $state(true);
 let isAuthenticated = $state(false);
+let currentAccessToken = $state<string | null>(null);
 
 export function getAuth() {
 	return {
@@ -47,16 +48,20 @@ export async function initAuth(clientId: string, convexClient: ConvexClient): Pr
 			onRedirectCallback: (params) => {
 				user = params.user;
 				isAuthenticated = true;
+				currentAccessToken = params.accessToken;
+				registerConvexAuth(convexClient, client);
 				// Redirect to the app after successful auth
 				window.location.replace(params.state?.returnTo ?? '/app');
 			},
 			onRefresh: (response) => {
 				user = response.user;
 				isAuthenticated = true;
+				currentAccessToken = response.accessToken;
 			},
 			onRefreshFailure: () => {
 				user = null;
 				isAuthenticated = false;
+				currentAccessToken = null;
 			}
 		});
 
@@ -67,31 +72,49 @@ export async function initAuth(clientId: string, convexClient: ConvexClient): Pr
 		if (currentUser) {
 			user = currentUser;
 			isAuthenticated = true;
+			try {
+				currentAccessToken = await client.getAccessToken();
+			} catch {
+				currentAccessToken = null;
+			}
+		} else {
+			currentAccessToken = null;
 		}
 
-		// Wire up Convex auth — setAuth calls fetchToken whenever Convex needs a token
-		convexClient.setAuth(
-			async ({ forceRefreshToken }) => {
-				try {
-					const token = await client.getAccessToken({
-						forceRefresh: forceRefreshToken
-					});
-					return token;
-				} catch {
-					// User not authenticated — return null
-					return null;
-				}
-			},
-			(convexIsAuthenticated: boolean) => {
-				isAuthenticated = convexIsAuthenticated;
-				if (!convexIsAuthenticated) {
-					user = null;
-				}
-			}
-		);
+		registerConvexAuth(convexClient, client);
 	} catch (error) {
 		console.error('Failed to initialize auth:', error);
 	} finally {
 		isLoading = false;
 	}
+}
+
+function registerConvexAuth(convexClient: ConvexClient, client: AuthKitClient): void {
+	// Avoid calling getAccessToken() when unauthenticated because that triggers
+	// a refresh request without a refresh token.
+	convexClient.setAuth(
+		async ({ forceRefreshToken }) => {
+			if (!client) return null;
+			if (!forceRefreshToken) {
+				return currentAccessToken;
+			}
+			try {
+				const token = await client.getAccessToken({
+					forceRefresh: true
+				});
+				currentAccessToken = token;
+				return token;
+			} catch {
+				currentAccessToken = null;
+				return null;
+			}
+		},
+		(convexIsAuthenticated: boolean) => {
+			isAuthenticated = convexIsAuthenticated;
+			if (!convexIsAuthenticated) {
+				user = null;
+				currentAccessToken = null;
+			}
+		}
+	);
 }

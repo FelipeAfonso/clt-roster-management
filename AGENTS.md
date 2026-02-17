@@ -3,7 +3,8 @@
 ## Project Overview
 
 World of Warcraft guild roster manager for "Cartel Lucros Taxados" (CLT).
-All user-facing UI text MUST be in **Brazilian Portuguese** (pt-BR).
+All in-app user-facing UI text/content MUST be in **Brazilian Portuguese** (pt-BR).
+This language rule applies to product UI/output only, not agent-to-user chat responses.
 Backend uses **Convex** for database/functions and **WorkOS** for authentication.
 Production URL: `https://clt.felipeafonso.com`
 
@@ -171,7 +172,8 @@ If available, use the Convex MCP server for backend tasks. Pass `projectDir` as 
 
 ## Key Reminders
 
-- All UI text in **Brazilian Portuguese** (pt-BR)
+- All in-app UI text in **Brazilian Portuguese** (pt-BR)
+- Agent chat replies should follow the user's language preference (default to English unless asked otherwise)
 - Never run `bun run dev` or `npx convex dev` yourself — assume they're running
 - Always run `bun run format && bun run lint && bun run check` after code changes
 - Server-side data initialization is mandatory — hydrate the client, never client-fetch-only
@@ -181,7 +183,8 @@ If available, use the Convex MCP server for backend tasks. Pass `projectDir` as 
 
 ## Portuguese Text Guidelines
 
-**IMPORTANT**: All user-facing Portuguese text in `.svelte` files MUST use HTML entities for accented characters. Do NOT use direct Unicode characters.
+**IMPORTANT**: All in-app user-facing Portuguese text in `.svelte` files MUST use HTML entities for accented characters. Do NOT use direct Unicode characters.
+This requirement is for template/UI content only, not for agent chat text.
 
 | Character | Entity     | Example                   |
 | --------- | ---------- | ------------------------- |
