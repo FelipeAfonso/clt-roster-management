@@ -1,0 +1,694 @@
+<script lang="ts">
+	import ThemeNav from '$lib/components/ThemeNav.svelte';
+</script>
+
+<svelte:head>
+	<title>Cartel Lucros Taxados — Escrit&oacute;rio do Cartel</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Special+Elite&display=swap"
+		rel="stylesheet"
+	/>
+</svelte:head>
+
+<div class="page">
+	<!-- Paper texture overlay -->
+	<div class="paper-texture"></div>
+
+	<!-- Coffee stain decoration -->
+	<div class="coffee-stain"></div>
+
+	<!-- Form Header -->
+	<header class="form-header">
+		<div class="ministry-logo">
+			<img src="/clt_banner_alt.webp" alt="Selo Oficial" class="seal" />
+		</div>
+		<div class="ministry-text">
+			<div class="ministry-name">MINIST&Eacute;RIO DAS RAIDS E DUNGEONS</div>
+			<div class="department">Departamento de Recursos Humanos e Loot</div>
+			<div class="subdepartment">Se&ccedil;&atilde;o de Admiss&atilde;o de S&oacute;cios</div>
+		</div>
+	</header>
+
+	<!-- Form Title -->
+	<div class="form-title">
+		<h1>FORMUL&Aacute;RIO DE ADMISS&Atilde;O</h1>
+		<div class="form-subtitle">CARTEL LUCROS TAXADOS &mdash; Em 3 vias</div>
+		<div class="form-code">C&oacute;d. CLT-RH-001/2024</div>
+	</div>
+
+	<!-- Rubber Stamps -->
+	<div class="stamps">
+		<div class="stamp stamp-approved">APROVADO</div>
+		<div class="stamp stamp-urgent">URGENTE</div>
+	</div>
+
+	<!-- Form Body -->
+	<main class="form-body">
+		<!-- Section 1: Dados da Organização -->
+		<section class="form-section">
+			<div class="section-header">
+				<span class="section-num">I.</span>
+				<span class="section-title">DADOS DA ORGANIZA&Ccedil;&Atilde;O</span>
+			</div>
+
+			<div class="form-row">
+				<div class="form-field full">
+					<label>Raz&atilde;o Social</label>
+					<div class="field-value typewriter">CARTEL LUCROS TAXADOS LTDA.</div>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<div class="form-field half">
+					<label>CNPJ Azerothiano</label>
+					<div class="field-value typewriter">66.666.666/0001-00</div>
+				</div>
+				<div class="form-field half">
+					<label>Ramo de Atividade</label>
+					<div class="field-value typewriter">Raids e Opera&ccedil;&otilde;es T&aacute;ticas</div>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<div class="form-field third">
+					<label>Meta Operacional</label>
+					<div class="field-value typewriter">Her&oacute;ico</div>
+				</div>
+				<div class="form-field third">
+					<label>Frequ&ecirc;ncia</label>
+					<div class="field-value typewriter">2x/semana</div>
+				</div>
+				<div class="form-field third">
+					<label>Dura&ccedil;&atilde;o</label>
+					<div class="field-value typewriter">2h30/dia</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Section 2: Foto do Candidato -->
+		<section class="form-section photo-section">
+			<div class="section-header">
+				<span class="section-num">II.</span>
+				<span class="section-title">FOTO 3x4 DO DIRETOR DE RH</span>
+			</div>
+
+			<div class="photo-frame">
+				<img src="/goblin_sam.webp" alt="Diretor de RH" class="photo" />
+				<div class="photo-caption">
+					<span class="typewriter">SR. GOBLIN</span>
+					<span class="typewriter-small">Diretor de Recrutamento</span>
+				</div>
+			</div>
+
+			<div class="photo-note">
+				<span class="checkbox checked"></span>
+				<span>Foto conforme padr&atilde;o oficial (monocle obrigat&oacute;rio)</span>
+			</div>
+		</section>
+
+		<!-- Section 3: Requisitos -->
+		<section class="form-section">
+			<div class="section-header">
+				<span class="section-num">III.</span>
+				<span class="section-title">REQUISITOS M&Iacute;NIMOS PARA ADMISS&Atilde;O</span>
+			</div>
+
+			<div class="checklist">
+				<div class="checklist-item">
+					<span class="checkbox checked"></span>
+					<span>Possuir entre 6 e 12 dedos nas m&atilde;os</span>
+				</div>
+				<div class="checklist-item">
+					<span class="checkbox checked"></span>
+					<span>Possuir no m&iacute;nimo 1 (um) olho funcional</span>
+				</div>
+				<div class="checklist-item">
+					<span class="checkbox checked"></span>
+					<span>Possuir no m&iacute;nimo 1 (um) ouvido</span>
+				</div>
+				<div class="checklist-item">
+					<span class="checkbox checked"></span>
+					<span>Ser uma pessoa legal (obrigat&oacute;rio)</span>
+				</div>
+				<div class="checklist-item">
+					<span class="checkbox"></span>
+					<span>Ser um Gnomo (opcional, mas n&atilde;o recomendado)</span>
+				</div>
+			</div>
+		</section>
+
+		<!-- Section 4: Sobre a Organização -->
+		<section class="form-section">
+			<div class="section-header">
+				<span class="section-num">IV.</span>
+				<span class="section-title">DESCRI&Ccedil;&Atilde;O DA ORGANIZA&Ccedil;&Atilde;O</span>
+			</div>
+
+			<div class="description-box">
+				<p>
+					O CARTEL LUCROS TAXADOS &eacute; uma organiza&ccedil;&atilde;o de <em>raiders</em> com ambi&ccedil;&otilde;es
+					her&oacute;icas e comprometimento casual. Fundada pelos veteranos Bacalhau e Cazalb&eacute;
+					(hist&oacute;rico: Cutting Edges, top 50 global M+).
+				</p>
+				<p>
+					A comunidade transcende World of Warcraft, com atividades em Deep Rock Galactic, REPO,
+					Overwatch e outros t&iacute;tulos.
+				</p>
+				<p class="highlight">
+					<strong>POL&Iacute;TICA DE INCLUS&Atilde;O:</strong> O Cartel aceita ouro de qualquer origem,
+					g&ecirc;nero ou credo. Atitudes preconceituosas resultam em Demiss&atilde;o por Justa Causa
+					+ maldi&ccedil;&atilde;o vudu eterna.
+				</p>
+			</div>
+		</section>
+
+		<!-- Section 5: Assinatura -->
+		<section class="form-section signature-section">
+			<div class="section-header">
+				<span class="section-num">V.</span>
+				<span class="section-title">ASSINATURA DO CANDIDATO</span>
+			</div>
+
+			<div class="signature-box">
+				<div class="signature-line">
+					<div class="line"></div>
+					<div class="label">Assinatura do Candidato</div>
+				</div>
+				<div class="signature-line">
+					<div class="line"></div>
+					<div class="label">Data</div>
+				</div>
+			</div>
+
+			<div class="cta-buttons">
+				<a href="https://discord.gg/xsBcqCQX" target="_blank" rel="noopener" class="btn primary">
+					ASSINAR CARTEIRA (DISCORD)
+				</a>
+				<a href="/enquete" class="btn secondary"> PREENCHER ENQUETE </a>
+			</div>
+		</section>
+	</main>
+
+	<!-- Footer / Fine Print -->
+	<footer class="fine-print">
+		<div class="fine-print-header">DISPOSI&Ccedil;&Otilde;ES LEGAIS</div>
+		<div class="fine-print-content">
+			<p>
+				Art. 1&ordm; - A sigla CLT refere-se exclusivamente ao CARTEL LUCROS TAXADOS e n&atilde;o
+				possui v&iacute;nculo com a Consolida&ccedil;&atilde;o das Leis do Trabalho, f&eacute;rias
+				remuneradas, ou direitos humanos b&aacute;sicos em Azeroth.
+			</p>
+			<p>
+				Art. 2&ordm; - A Diretoria isenta-se de responsabilidade por: (a) danos morais por wipes em
+				keys +2; (b) uso de Gnomos como muni&ccedil;&atilde;o de canh&atilde;o; (c) perda de
+				sanidade em Midnight.
+			</p>
+			<p class="final">Art. 3&ordm; - O lucro &eacute; nosso. A culpa &eacute; sempre do Healer.</p>
+		</div>
+		<div class="form-footer">
+			<span
+				>Via: 1&ordf; (Cartel) &bull; 2&ordf; (Candidato) &bull; 3&ordf; (Healer para culpar)</span
+			>
+		</div>
+	</footer>
+
+	<div class="nav-spacer"></div>
+</div>
+
+<ThemeNav current={3} />
+
+<style>
+	:global(body) {
+		margin: 0;
+		padding: 0;
+	}
+
+	.page {
+		--mustard: #c9a227;
+		--mustard-light: #e8c547;
+		--beige: #f4efe4;
+		--beige-dark: #e8e0d0;
+		--ink-blue: #1a3a5c;
+		--ink-faded: #4a6a8c;
+		--stamp-red: #c41e3a;
+		--stamp-blue: #2d5aa0;
+
+		font-family: 'IBM Plex Sans', Arial, sans-serif;
+		background: var(--beige);
+		color: var(--ink-blue);
+		min-height: 100vh;
+		line-height: 1.5;
+		position: relative;
+		padding: 2rem 1rem;
+	}
+
+	/* Paper texture */
+	.paper-texture {
+		position: fixed;
+		inset: 0;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	/* Coffee stain */
+	.coffee-stain {
+		position: fixed;
+		top: 15%;
+		right: 8%;
+		width: 120px;
+		height: 120px;
+		border-radius: 50%;
+		background: radial-gradient(
+			ellipse at center,
+			transparent 30%,
+			rgba(139, 90, 43, 0.08) 50%,
+			rgba(139, 90, 43, 0.15) 60%,
+			transparent 70%
+		);
+		transform: rotate(15deg) scale(1.2, 1);
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	/* Form Header */
+	.form-header {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+		padding-bottom: 1rem;
+		border-bottom: 2px solid var(--ink-blue);
+		max-width: 800px;
+		margin: 0 auto 1.5rem;
+	}
+
+	.ministry-logo {
+		flex-shrink: 0;
+	}
+
+	.seal {
+		width: 100px;
+		height: auto;
+		filter: sepia(20%) saturate(0.8);
+	}
+
+	.ministry-text {
+		flex: 1;
+	}
+
+	.ministry-name {
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.15em;
+		color: var(--ink-blue);
+	}
+
+	.department {
+		font-size: 0.85rem;
+		font-weight: 500;
+		margin-top: 0.25rem;
+	}
+
+	.subdepartment {
+		font-size: 0.75rem;
+		color: var(--ink-faded);
+		margin-top: 0.125rem;
+	}
+
+	/* Form Title */
+	.form-title {
+		position: relative;
+		z-index: 1;
+		text-align: center;
+		max-width: 800px;
+		margin: 0 auto 2rem;
+		padding: 1.5rem;
+		background: var(--beige-dark);
+		border: 1px solid var(--ink-faded);
+	}
+
+	.form-title h1 {
+		font-family: 'Special Elite', 'Courier New', monospace;
+		font-size: clamp(1.25rem, 4vw, 1.75rem);
+		font-weight: 400;
+		margin: 0;
+		letter-spacing: 0.1em;
+	}
+
+	.form-subtitle {
+		font-size: 0.8rem;
+		margin-top: 0.5rem;
+		color: var(--ink-faded);
+	}
+
+	.form-code {
+		font-family: 'Special Elite', monospace;
+		font-size: 0.7rem;
+		margin-top: 0.5rem;
+		color: var(--ink-faded);
+	}
+
+	/* Rubber stamps */
+	.stamps {
+		position: absolute;
+		top: 180px;
+		right: 10%;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.stamp {
+		font-family: 'Special Elite', monospace;
+		font-size: 0.9rem;
+		font-weight: 700;
+		padding: 0.25rem 0.75rem;
+		border: 3px solid;
+		border-radius: 4px;
+		transform: rotate(-12deg);
+		opacity: 0.8;
+	}
+
+	.stamp-approved {
+		color: var(--stamp-blue);
+		border-color: var(--stamp-blue);
+	}
+
+	.stamp-urgent {
+		color: var(--stamp-red);
+		border-color: var(--stamp-red);
+		transform: rotate(8deg);
+	}
+
+	@media (max-width: 900px) {
+		.stamps {
+			position: static;
+			flex-direction: row;
+			justify-content: center;
+			margin-bottom: 1rem;
+		}
+	}
+
+	/* Form Body */
+	.form-body {
+		position: relative;
+		z-index: 1;
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	/* Form Sections */
+	.form-section {
+		background: white;
+		border: 1px solid var(--ink-faded);
+		padding: 1.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.section-header {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px dashed var(--ink-faded);
+	}
+
+	.section-num {
+		font-weight: 600;
+		color: var(--ink-blue);
+	}
+
+	.section-title {
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		color: var(--ink-blue);
+	}
+
+	/* Form fields */
+	.form-row {
+		display: flex;
+		gap: 1rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.form-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.form-field.full {
+		flex: 1;
+	}
+
+	.form-field.half {
+		flex: 1;
+	}
+
+	.form-field.third {
+		flex: 1;
+	}
+
+	.form-field label {
+		font-size: 0.65rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--ink-faded);
+	}
+
+	.field-value {
+		padding: 0.5rem;
+		background: var(--beige);
+		border-bottom: 1px solid var(--ink-blue);
+		font-size: 0.9rem;
+	}
+
+	.typewriter {
+		font-family: 'Special Elite', 'Courier New', monospace;
+	}
+
+	/* Photo section */
+	.photo-section {
+		text-align: center;
+	}
+
+	.photo-frame {
+		display: inline-block;
+		padding: 0.5rem;
+		background: white;
+		border: 2px solid var(--ink-blue);
+		box-shadow: 2px 2px 0 var(--ink-faded);
+	}
+
+	.photo {
+		width: 150px;
+		height: auto;
+		filter: sepia(15%) contrast(1.1);
+	}
+
+	.photo-caption {
+		margin-top: 0.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.125rem;
+	}
+
+	.typewriter-small {
+		font-family: 'Special Elite', monospace;
+		font-size: 0.65rem;
+		color: var(--ink-faded);
+	}
+
+	.photo-note {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-top: 1rem;
+		font-size: 0.75rem;
+		color: var(--ink-faded);
+	}
+
+	/* Checkbox */
+	.checkbox {
+		display: inline-block;
+		width: 14px;
+		height: 14px;
+		border: 1px solid var(--ink-blue);
+		background: white;
+		position: relative;
+		flex-shrink: 0;
+	}
+
+	.checkbox.checked::after {
+		content: '✓';
+		position: absolute;
+		top: -2px;
+		left: 1px;
+		font-size: 14px;
+		color: var(--ink-blue);
+	}
+
+	/* Checklist */
+	.checklist {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.checklist-item {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		font-size: 0.85rem;
+	}
+
+	/* Description box */
+	.description-box {
+		font-size: 0.85rem;
+		line-height: 1.7;
+	}
+
+	.description-box p {
+		margin: 0 0 0.75rem 0;
+	}
+
+	.description-box em {
+		font-style: italic;
+	}
+
+	.description-box .highlight {
+		background: rgba(201, 162, 39, 0.15);
+		padding: 0.75rem;
+		border-left: 3px solid var(--mustard);
+		margin-top: 1rem;
+	}
+
+	/* Signature section */
+	.signature-box {
+		display: flex;
+		gap: 2rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.signature-line {
+		flex: 1;
+	}
+
+	.signature-line .line {
+		height: 1px;
+		background: var(--ink-blue);
+		margin-bottom: 0.25rem;
+	}
+
+	.signature-line .label {
+		font-size: 0.65rem;
+		color: var(--ink-faded);
+		text-align: center;
+	}
+
+	/* CTA buttons */
+	.cta-buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		justify-content: center;
+	}
+
+	.btn {
+		display: inline-block;
+		padding: 0.875rem 1.5rem;
+		font-family: 'Special Elite', monospace;
+		font-size: 0.85rem;
+		text-decoration: none;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		transition: all 0.2s ease;
+	}
+
+	.btn.primary {
+		background: var(--ink-blue);
+		color: white;
+		border: 2px solid var(--ink-blue);
+	}
+
+	.btn.primary:hover {
+		background: var(--ink-faded);
+		transform: translateY(-2px);
+	}
+
+	.btn.secondary {
+		background: transparent;
+		color: var(--ink-blue);
+		border: 2px solid var(--ink-blue);
+	}
+
+	.btn.secondary:hover {
+		background: var(--beige-dark);
+	}
+
+	/* Fine print */
+	.fine-print {
+		position: relative;
+		z-index: 1;
+		max-width: 800px;
+		margin: 2rem auto 0;
+		padding: 1.5rem;
+		background: var(--beige-dark);
+		border: 1px dashed var(--ink-faded);
+	}
+
+	.fine-print-header {
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.15em;
+		text-align: center;
+		margin-bottom: 1rem;
+		color: var(--ink-blue);
+	}
+
+	.fine-print-content p {
+		font-size: 0.65rem;
+		color: var(--ink-faded);
+		margin: 0 0 0.5rem 0;
+		line-height: 1.6;
+	}
+
+	.fine-print-content .final {
+		font-weight: 600;
+		color: var(--ink-blue);
+		text-align: center;
+		margin-top: 0.75rem;
+	}
+
+	.form-footer {
+		text-align: center;
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--ink-faded);
+		font-size: 0.65rem;
+		color: var(--ink-faded);
+	}
+
+	.nav-spacer {
+		height: 80px;
+	}
+
+	@media (max-width: 600px) {
+		.form-row {
+			flex-direction: column;
+		}
+
+		.signature-box {
+			flex-direction: column;
+		}
+	}
+</style>
