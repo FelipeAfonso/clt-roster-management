@@ -21,13 +21,6 @@
 	<div class="bg-stripes pointer-events-none fixed inset-0"></div>
 	<div class="bg-grain pointer-events-none fixed inset-0"></div>
 
-	<!-- Top Banner -->
-	<header class="relative z-10 bg-black py-2 text-center text-cream">
-		<span class="text-xs tracking-[0.2em] uppercase">
-			Minist&eacute;rio das Raids &bull; Departamento de Loot
-		</span>
-	</header>
-
 	<!-- Main Content Container -->
 	<main class="relative z-10 mx-auto max-w-7xl px-4 py-8 lg:px-8">
 		<!-- Hero Section - Desktop: Side by side, Mobile: Stacked -->
@@ -137,11 +130,6 @@
 				<!-- CTA Box -->
 				<div class="border-4 border-black bg-gradient-to-br from-red to-red-dark p-4 md:p-6">
 					<div class="flex flex-col items-center gap-4 md:flex-row">
-						<img
-							src="/goblinanim.gif"
-							alt="Recrutador Animado"
-							class="w-24 border-[3px] border-cream md:w-28"
-						/>
 						<div class="flex-1 text-center text-cream md:text-left">
 							<h2 class="font-display text-2xl tracking-[0.1em] md:text-3xl">N&Atilde;O ESPERE!</h2>
 							<p class="mt-1 text-sm md:text-base">
@@ -217,9 +205,6 @@
 							ENTRAR NO SISTEMA
 						</Button>
 					{/if}
-					<p class="mt-3 text-center text-xs text-black/50">
-						Identifica&ccedil;&atilde;o via WorkOS AuthKit
-					</p>
 				</div>
 			</div>
 		</section>
@@ -236,9 +221,6 @@
 			<p class="mt-1 text-xs text-black/60">
 				[2] A Diretoria n&atilde;o se responsabiliza por wipes em +2, Gnomos usados como
 				proj&eacute;teis, ou crises existenciais durante progress&atilde;o.
-			</p>
-			<p class="mt-4 text-center font-display text-base tracking-[0.1em] text-red md:text-lg">
-				&ldquo;O LUCRO &Eacute; NOSSO. A CULPA &Eacute; SEMPRE DO HEALER.&rdquo;
 			</p>
 		</footer>
 	</main>
