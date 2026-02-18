@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getAuth } from '$lib/auth.svelte';
+	import { useAuthState, useAuthActions } from '$lib/auth.svelte';
 	import { page } from '$app/state';
 	import { ClipboardList, Home, LogOut, Menu } from '@lucide/svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar';
@@ -8,7 +8,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
 
-	const auth = getAuth();
+	const auth = useAuthState();
+	const authActions = useAuthActions();
 
 	let { children } = $props();
 
@@ -29,8 +30,8 @@
 		<h1 class="text-2xl font-bold">Cartel Lucros Taxados</h1>
 		<p class="text-muted-foreground">Voc&ecirc; precisa de acesso para abrir esta p&aacute;gina.</p>
 		<div class="flex gap-2">
-			<Button onclick={() => auth.signIn()}>Continuar</Button>
-			<Button variant="outline" onclick={() => auth.signUp()}>Criar conta</Button>
+			<Button onclick={() => authActions.signIn()}>Continuar</Button>
+			<Button variant="outline" onclick={() => authActions.signUp()}>Criar conta</Button>
 		</div>
 		<Button variant="link" href="/">Voltar para o in&iacute;cio</Button>
 	</div>
@@ -91,7 +92,7 @@
 									{auth.user?.email ?? ''}
 								</DropdownMenu.Label>
 								<DropdownMenu.Separator />
-								<DropdownMenu.Item onclick={() => auth.signOut()}>
+								<DropdownMenu.Item onclick={() => authActions.signOut()}>
 									<LogOut class="mr-2 size-4" />
 									Sair
 								</DropdownMenu.Item>

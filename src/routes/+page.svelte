@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { getAuth } from '$lib/auth.svelte';
+	import { useAuthState, useAuthActions } from '$lib/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 
-	const auth = getAuth();
+	const auth = useAuthState();
+	const authActions = useAuthActions();
 </script>
 
 <svelte:head>
@@ -186,11 +187,11 @@
 					</p>
 					{#if auth.isAuthenticated}
 						<div class="flex flex-col gap-3">
-							<Button href="/painel" class="w-full font-display text-base tracking-[0.1em]">
+							<Button href="/app" class="w-full font-display text-base tracking-[0.1em]">
 								ACESSAR PAINEL
 							</Button>
 							<Button
-								onclick={() => auth.signOut()}
+								onclick={() => authActions.signOut()}
 								variant="outline"
 								class="w-full font-display text-sm tracking-[0.1em]"
 							>
@@ -199,7 +200,7 @@
 						</div>
 					{:else}
 						<Button
-							onclick={() => auth.signIn()}
+							onclick={() => authActions.signIn()}
 							class="w-full font-display text-base tracking-[0.1em]"
 						>
 							ENTRAR NO SISTEMA

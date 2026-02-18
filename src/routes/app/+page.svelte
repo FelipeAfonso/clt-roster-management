@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { getAuth } from '$lib/auth.svelte';
+	import { useAuthState } from '$lib/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { ClipboardList } from '@lucide/svelte';
 
-	const auth = getAuth();
+	const auth = useAuthState();
 </script>
 
 <div class="mx-auto max-w-2xl">
