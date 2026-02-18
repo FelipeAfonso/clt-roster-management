@@ -7,6 +7,10 @@
 	const auth = useAuthState();
 </script>
 
+<svelte:head>
+	<title>Painel | Cartel Lucros Taxados</title>
+</svelte:head>
+
 <div class="mx-auto max-w-2xl">
 	<h1 class="mb-2 text-2xl font-bold">
 		Ol&aacute;, {auth.user?.firstName ?? 'jogador'}!

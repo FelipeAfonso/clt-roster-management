@@ -19,6 +19,10 @@
 	);
 </script>
 
+<svelte:head>
+	<title>Resultados da Enquete | Cartel Lucros Taxados</title>
+</svelte:head>
+
 <div class="mx-auto max-w-2xl">
 	<div class="mb-4 flex items-center justify-between">
 		<h1 class="text-2xl font-bold">Resultados da Enquete</h1>

@@ -120,6 +120,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Enquete de Raid | Cartel Lucros Taxados</title>
+</svelte:head>
+
 <div class="mx-auto max-w-lg p-4">
 	<h1 class="mb-4 text-2xl font-bold">Enquete de Raid &mdash; CLT</h1>
 

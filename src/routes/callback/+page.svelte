@@ -10,6 +10,7 @@
 	 * Once auth state resolves, we redirect accordingly.
 	 */
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { useAuthState } from '$lib/auth.svelte';
 
 	const auth = useAuthState();
@@ -17,15 +18,17 @@
 	$effect(() => {
 		if (!auth.isLoading) {
 			if (auth.isAuthenticated) {
-				// eslint-disable-next-line svelte/no-navigation-without-resolve -- static route
-				goto('/app');
+				goto(resolve('/app'));
 			} else {
-				// eslint-disable-next-line svelte/no-navigation-without-resolve -- static route
-				goto('/');
+				goto(resolve('/'));
 			}
 		}
 	});
 </script>
+
+<svelte:head>
+	<title>Autenticando | Cartel Lucros Taxados</title>
+</svelte:head>
 
 <div class="flex h-screen items-center justify-center">
 	<p class="text-muted-foreground">Autenticando...</p>
