@@ -4,9 +4,13 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { Separator } from '$lib/components/ui/separator';
 	import * as Accordion from '$lib/components/ui/accordion';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import AvailabilityGrid from '$lib/components/AvailabilityGrid.svelte';
+	import ClassDistribution from '$lib/components/dashboard/ClassDistribution.svelte';
+	import ClassRoleMatrix from '$lib/components/dashboard/ClassRoleMatrix.svelte';
+	import AvailabilityHeatmap from '$lib/components/dashboard/AvailabilityHeatmap.svelte';
 	import { RAID_STATUS_LABELS, type RaidStatus } from '$lib/constants';
 
 	const responses = useQuery(api.pollResponses.listResponses, {});
@@ -23,7 +27,7 @@
 	<title>Resultados da Enquete | Cartel Lucros Taxados</title>
 </svelte:head>
 
-<div class="mx-auto max-w-2xl">
+<div class="mx-auto max-w-5xl">
 	<div class="mb-4 flex items-center justify-between">
 		<h1 class="text-2xl font-bold">Resultados da Enquete</h1>
 		<Button variant="outline" size="sm" href="/enquete">Responder enquete</Button>
@@ -34,6 +38,7 @@
 	{:else if responses.error}
 		<p class="text-destructive">Erro ao carregar resultados.</p>
 	{:else if responses.data}
+		<!-- Summary cards — always visible above tabs -->
 		<div class="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
 			<Card.Root>
 				<Card.Content class="p-3 text-center">
@@ -61,79 +66,126 @@
 			</Card.Root>
 		</div>
 
-		<Separator class="mb-4" />
+		<Tooltip.Provider>
+			<Tabs.Root value="dashboard">
+				<Tabs.List class="mb-4 w-full">
+					<Tabs.Trigger value="dashboard" class="flex-1 font-display tracking-wide uppercase">
+						Dashboard
+					</Tabs.Trigger>
+					<Tabs.Trigger value="respostas" class="flex-1 font-display tracking-wide uppercase">
+						Respostas
+					</Tabs.Trigger>
+				</Tabs.List>
 
-		{#if responses.data.length === 0}
-			<p class="text-center text-muted-foreground">Nenhuma resposta ainda.</p>
-		{:else}
-			<Accordion.Root type="multiple">
-				{#each responses.data as response (response._id)}
-					<Accordion.Item value={response._id}>
-						<Accordion.Trigger class="text-left">
-							<div class="flex flex-1 items-center justify-between pr-2">
-								<div class="flex flex-col items-start gap-0.5">
-									<span class="font-medium">{response.name}</span>
-									<span class="text-xs text-muted-foreground">
-										{new Date(response._creationTime).toLocaleDateString('pt-BR', {
-											day: '2-digit',
-											month: '2-digit',
-											year: 'numeric',
-											hour: '2-digit',
-											minute: '2-digit'
-										})}
-									</span>
-								</div>
-								<div class="flex flex-col items-end gap-1">
-									<Badge
-										variant={response.raidStatus === 'ready'
-											? 'default'
-											: response.raidStatus === 'later'
-												? 'secondary'
-												: 'outline'}
-									>
-										{RAID_STATUS_LABELS[response.raidStatus as RaidStatus]}
-									</Badge>
-									{#if response.raidStatus === 'later' && response.availableDate}
-										<span class="text-xs text-muted-foreground">
-											a partir de {new Date(
-												response.availableDate + 'T00:00:00'
-											).toLocaleDateString('pt-BR')}
-										</span>
-									{/if}
-								</div>
-							</div>
-						</Accordion.Trigger>
-						<Accordion.Content>
-							<div class="flex flex-col gap-3 py-2">
-								<div>
-									<p class="mb-1 text-xs font-medium text-muted-foreground">Classes</p>
-									<div class="flex flex-wrap gap-1">
-										{#each response.classes as cls (cls)}
-											<Badge variant="outline">{cls}</Badge>
-										{/each}
-									</div>
-								</div>
+				<!-- Dashboard Tab -->
+				<Tabs.Content value="dashboard">
+					<div class="flex flex-col gap-8">
+						<!-- Class Distribution -->
+						<Card.Root>
+							<Card.Content class="p-4 sm:p-6">
+								<ClassDistribution responses={responses.data} />
+							</Card.Content>
+						</Card.Root>
 
-								<div>
-									<p class="mb-1 text-xs font-medium text-muted-foreground">Roles</p>
-									<div class="flex flex-wrap gap-1">
-										{#each response.roles as role (role)}
-											<Badge variant="outline">{role}</Badge>
-										{/each}
-									</div>
-								</div>
+						<!-- Class × Role Matrix -->
+						<Card.Root>
+							<Card.Content class="p-4 sm:p-6">
+								<ClassRoleMatrix responses={responses.data} />
+							</Card.Content>
+						</Card.Root>
 
-								{#if response.raidStatus !== 'not_interested' && response.availability}
-									<div>
-										<p class="mb-1 text-xs font-medium text-muted-foreground">Disponibilidade</p>
-										<AvailabilityGrid availability={response.availability} editable={false} />
-									</div>
-								{/if}
-							</div>
-						</Accordion.Content>
-					</Accordion.Item>
-				{/each}
-			</Accordion.Root>
-		{/if}
+						<!-- Availability Heatmap -->
+						<Card.Root>
+							<Card.Content class="p-4 sm:p-6">
+								<AvailabilityHeatmap responses={responses.data} />
+							</Card.Content>
+						</Card.Root>
+					</div>
+				</Tabs.Content>
+
+				<!-- Respostas Tab -->
+				<Tabs.Content value="respostas">
+					<div class="mx-auto max-w-2xl">
+						{#if responses.data.length === 0}
+							<p class="text-center text-muted-foreground">Nenhuma resposta ainda.</p>
+						{:else}
+							<Accordion.Root type="multiple">
+								{#each responses.data as response (response._id)}
+									<Accordion.Item value={response._id}>
+										<Accordion.Trigger class="text-left">
+											<div class="flex flex-1 items-center justify-between pr-2">
+												<div class="flex flex-col items-start gap-0.5">
+													<span class="font-medium">{response.name}</span>
+													<span class="text-xs text-muted-foreground">
+														{new Date(response._creationTime).toLocaleDateString('pt-BR', {
+															day: '2-digit',
+															month: '2-digit',
+															year: 'numeric',
+															hour: '2-digit',
+															minute: '2-digit'
+														})}
+													</span>
+												</div>
+												<div class="flex flex-col items-end gap-1">
+													<Badge
+														variant={response.raidStatus === 'ready'
+															? 'default'
+															: response.raidStatus === 'later'
+																? 'secondary'
+																: 'outline'}
+													>
+														{RAID_STATUS_LABELS[response.raidStatus as RaidStatus]}
+													</Badge>
+													{#if response.raidStatus === 'later' && response.availableDate}
+														<span class="text-xs text-muted-foreground">
+															a partir de {new Date(
+																response.availableDate + 'T00:00:00'
+															).toLocaleDateString('pt-BR')}
+														</span>
+													{/if}
+												</div>
+											</div>
+										</Accordion.Trigger>
+										<Accordion.Content>
+											<div class="flex flex-col gap-3 py-2">
+												<div>
+													<p class="mb-1 text-xs font-medium text-muted-foreground">Classes</p>
+													<div class="flex flex-wrap gap-1">
+														{#each response.classes as cls (cls)}
+															<Badge variant="outline">{cls}</Badge>
+														{/each}
+													</div>
+												</div>
+
+												<div>
+													<p class="mb-1 text-xs font-medium text-muted-foreground">Roles</p>
+													<div class="flex flex-wrap gap-1">
+														{#each response.roles as role (role)}
+															<Badge variant="outline">{role}</Badge>
+														{/each}
+													</div>
+												</div>
+
+												{#if response.raidStatus !== 'not_interested' && response.availability}
+													<div>
+														<p class="mb-1 text-xs font-medium text-muted-foreground">
+															Disponibilidade
+														</p>
+														<AvailabilityGrid
+															availability={response.availability}
+															editable={false}
+														/>
+													</div>
+												{/if}
+											</div>
+										</Accordion.Content>
+									</Accordion.Item>
+								{/each}
+							</Accordion.Root>
+						{/if}
+					</div>
+				</Tabs.Content>
+			</Tabs.Root>
+		</Tooltip.Provider>
 	{/if}
 </div>
