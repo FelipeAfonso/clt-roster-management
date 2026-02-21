@@ -71,7 +71,18 @@
 					<Accordion.Item value={response._id}>
 						<Accordion.Trigger class="text-left">
 							<div class="flex flex-1 items-center justify-between pr-2">
-								<span class="font-medium">{response.name}</span>
+								<div class="flex flex-col items-start gap-0.5">
+									<span class="font-medium">{response.name}</span>
+									<span class="text-xs text-muted-foreground">
+										{new Date(response._creationTime).toLocaleDateString('pt-BR', {
+											day: '2-digit',
+											month: '2-digit',
+											year: 'numeric',
+											hour: '2-digit',
+											minute: '2-digit'
+										})}
+									</span>
+								</div>
 								<div class="flex flex-col items-end gap-1">
 									<Badge
 										variant={response.raidStatus === 'ready'
