@@ -131,64 +131,55 @@
 							{@const slot = heatmapData[key]}
 							{@const isPeak = peakSlots.has(key)}
 							<td class="border-2 border-border p-0">
-								<Tooltip.Root>
-									<Tooltip.Trigger>
-										{#snippet child({ props })}
-											<div
-												{...props}
-												class="flex min-h-8 items-center justify-center px-1 py-1 text-center text-xs font-bold transition-colors"
-												class:ring-2={isPeak}
-												class:ring-gold={isPeak}
-												class:ring-inset={isPeak}
-												style="
-													background-color: {getHeatColor(slot)};
-													color: {getTextColor(slot)};
-												"
-											>
-												{#if slot.totalCount > 0}
-													<span>{slot.totalCount}</span>
-													{#if slot.laterCount > 0}
-														<span class="ml-0.5 text-[0.6rem] opacity-70">
-															+{slot.laterCount}
-														</span>
-													{/if}
-												{/if}
-											</div>
-										{/snippet}
-									</Tooltip.Trigger>
-									<Tooltip.Portal>
-										<Tooltip.Content class="max-w-xs">
-											<p class="mb-1 text-xs font-bold">
-												{DAY_SHORT_LABELS[day.key]}
-												{time}
-												{#if isPeak}
-													&mdash; Pico!
-												{/if}
-											</p>
-											{#if slot.totalCount === 0}
-												<p class="text-xs text-muted-foreground">
-													Nenhum jogador dispon&iacute;vel
-												</p>
-											{:else}
-												{#if slot.readyCount > 0}
-													<p class="text-xs">
-														<span class="font-bold" style="color: #c41e3a;"
-															>Prontos ({slot.readyCount}):</span
-														>
-														{slot.readyPlayers.join(', ')}
-													</p>
-												{/if}
-												{#if slot.laterCount > 0}
-													<p class="mt-0.5 text-xs">
-														<span class="font-bold" style="color: #c9a227;"
-															>Mais tarde ({slot.laterCount}):</span
-														>
-														{slot.laterPlayers.join(', ')}
-													</p>
-												{/if}
+								<Tooltip.Root delayDuration={100}>
+									<Tooltip.Trigger
+										class="flex min-h-8 w-full cursor-default items-center justify-center px-1 py-1 text-center text-xs font-bold transition-colors {isPeak
+											? 'ring-2 ring-gold ring-inset'
+											: ''}"
+										style="
+											background-color: {getHeatColor(slot)};
+											color: {getTextColor(slot)};
+										"
+										type="button"
+									>
+										{#if slot.totalCount > 0}
+											<span>{slot.totalCount}</span>
+											{#if slot.laterCount > 0}
+												<span class="ml-0.5 text-[0.6rem] opacity-70">
+													+{slot.laterCount}
+												</span>
 											{/if}
-										</Tooltip.Content>
-									</Tooltip.Portal>
+										{/if}
+									</Tooltip.Trigger>
+									<Tooltip.Content class="max-w-xs">
+										<p class="mb-1 text-xs font-bold">
+											{DAY_SHORT_LABELS[day.key]}
+											{time}
+											{#if isPeak}
+												&mdash; Pico!
+											{/if}
+										</p>
+										{#if slot.totalCount === 0}
+											<p class="text-xs text-muted-foreground">Nenhum jogador dispon&iacute;vel</p>
+										{:else}
+											{#if slot.readyCount > 0}
+												<p class="text-xs">
+													<span class="font-bold" style="color: #c41e3a;"
+														>Prontos ({slot.readyCount}):</span
+													>
+													{slot.readyPlayers.join(', ')}
+												</p>
+											{/if}
+											{#if slot.laterCount > 0}
+												<p class="mt-0.5 text-xs">
+													<span class="font-bold" style="color: #c9a227;"
+														>Mais tarde ({slot.laterCount}):</span
+													>
+													{slot.laterPlayers.join(', ')}
+												</p>
+											{/if}
+										{/if}
+									</Tooltip.Content>
 								</Tooltip.Root>
 							</td>
 						{/each}

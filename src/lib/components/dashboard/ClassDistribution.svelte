@@ -6,7 +6,6 @@
 		getClassBorderColor,
 		getClassTextShadow
 	} from '$lib/constants/wowClassColors';
-	import * as Tooltip from '$lib/components/ui/tooltip';
 
 	type PollResponse = {
 		name: string;
@@ -45,69 +44,90 @@
 	});
 
 	let maxCount = $derived(Math.max(...classData.map((c) => c.count), 1));
+
+	let hoveredEntry: ClassEntry | null = $state(null);
+	let mouseX = $state(0);
+	let mouseY = $state(0);
+
+	function handleMouseMove(e: MouseEvent) {
+		mouseX = e.clientX;
+		mouseY = e.clientY;
+	}
+
+	function handleMouseEnter(entry: ClassEntry) {
+		if (entry.count > 0) {
+			hoveredEntry = entry;
+		}
+	}
+
+	function handleMouseLeave() {
+		hoveredEntry = null;
+	}
 </script>
 
 <div class="flex flex-col gap-2">
 	<h2 class="font-display text-lg tracking-wide uppercase">Classes Dispon&iacute;veis</h2>
 	<p class="text-xs text-muted-foreground">
-		Distribui&ccedil;&atilde;o de classes entre jogadores interessados ({interestedResponses.length} jogadores)
+		Distribui&ccedil;&atilde;o de classes entre jogadores interessados ({interestedResponses.length}
+		jogadores)
 	</p>
 
 	<div class="mt-2 flex flex-col gap-1.5">
 		{#each classData as entry (entry.name)}
 			{@const widthPercent = maxCount > 0 ? (entry.count / maxCount) * 100 : 0}
-			<Tooltip.Root>
-				<Tooltip.Trigger>
-					{#snippet child({ props })}
-						<div {...props} class="group flex items-center gap-3">
-							<span
-								class="w-44 shrink-0 truncate text-right text-sm font-medium"
-								style="color: {entry.color}; text-shadow: {entry.textShadow};"
-							>
-								{entry.name}
-							</span>
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div
+				class="flex w-full items-center gap-3"
+				onmousemove={handleMouseMove}
+				onmouseenter={() => handleMouseEnter(entry)}
+				onmouseleave={handleMouseLeave}
+			>
+				<span
+					class="w-44 shrink-0 truncate text-right text-sm font-medium"
+					style="color: {entry.color}; text-shadow: {entry.textShadow};"
+				>
+					{entry.name}
+				</span>
 
-							<div class="relative h-7 flex-1">
-								<div
-									class="absolute inset-y-0 left-0 flex items-center border-2 transition-all duration-300"
-									style="
-										width: {widthPercent}%;
-										min-width: {entry.count > 0 ? '2rem' : '0'};
-										background-color: {entry.color};
-										border-color: {entry.borderColor};
-										opacity: {entry.count > 0 ? 1 : 0.15};
-									"
-								>
-									{#if entry.count > 0}
-										<span class="px-2 text-xs font-bold" style="color: {entry.textColor};">
-											{entry.count}
-										</span>
-									{/if}
-								</div>
-								{#if entry.count === 0}
-									<div class="absolute inset-y-0 left-0 flex w-full items-center">
-										<span class="px-2 text-xs text-muted-foreground">&mdash;</span>
-									</div>
-								{/if}
-							</div>
-						</div>
-					{/snippet}
-				</Tooltip.Trigger>
-				<Tooltip.Portal>
-					<Tooltip.Content side="right" class="max-w-xs">
+				<div class="relative h-7 flex-1">
+					<div
+						class="absolute inset-y-0 left-0 flex items-center border-2 transition-all duration-300"
+						style="
+							width: {widthPercent}%;
+							min-width: {entry.count > 0 ? '2rem' : '0'};
+							background-color: {entry.color};
+							border-color: {entry.borderColor};
+							opacity: {entry.count > 0 ? 1 : 0.15};
+						"
+					>
 						{#if entry.count > 0}
-							<p class="mb-1 text-xs font-bold" style="color: {entry.color};">
-								{entry.name} ({entry.count})
-							</p>
-							<p class="text-xs">{entry.players.join(', ')}</p>
-						{:else}
-							<p class="text-xs text-muted-foreground">
-								Nenhum jogador selecionou {entry.name}
-							</p>
+							<span class="px-2 text-xs font-bold" style="color: {entry.textColor};">
+								{entry.count}
+							</span>
 						{/if}
-					</Tooltip.Content>
-				</Tooltip.Portal>
-			</Tooltip.Root>
+					</div>
+					{#if entry.count === 0}
+						<div class="absolute inset-y-0 left-0 flex w-full items-center">
+							<span class="px-2 text-xs text-muted-foreground">&mdash;</span>
+						</div>
+					{/if}
+				</div>
+			</div>
 		{/each}
 	</div>
 </div>
+
+{#if hoveredEntry}
+	<div
+		class="pointer-events-none fixed z-50 max-w-xs rounded-md bg-foreground px-3 py-1.5 text-xs text-background shadow-md"
+		style="left: {mouseX}px; top: {mouseY - 12}px; transform: translate(-50%, -100%);"
+	>
+		<p class="mb-1 text-xs font-bold" style="color: {hoveredEntry.color};">
+			{hoveredEntry.name} ({hoveredEntry.count})
+		</p>
+		<p class="text-xs">{hoveredEntry.players.join(', ')}</p>
+		<div
+			class="absolute bottom-0 left-1/2 size-2.5 -translate-x-1/2 translate-y-[calc(50%-1px)] rotate-45 rounded-[2px] bg-foreground"
+		></div>
+	</div>
+{/if}

@@ -124,6 +124,7 @@ No test framework is set up yet. When one is added, update this section.
 
 ### UI Components (shadcn-svelte)
 
+- **Docs reference**: `https://shadcn-svelte.com/llms.txt` — fetch this URL for full component docs index. Individual component docs at `https://shadcn-svelte.com/docs/components/<name>.md` (e.g., `tooltip.md`, `dialog.md`, `accordion.md`).
 - Components install to `$lib/components/ui/` via shadcn-svelte CLI
 - Use `cn()` from `$lib/utils` for conditional class merging (clsx + tailwind-merge)
 - Use `tailwind-variants` for component variant APIs

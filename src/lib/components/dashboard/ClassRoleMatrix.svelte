@@ -117,30 +117,24 @@
 							{@const cell = row.cells[role]}
 							<td class="border-2 border-border p-0 text-center">
 								{#if cell.count > 0}
-									<Tooltip.Root>
-										<Tooltip.Trigger>
-											{#snippet child({ props })}
-												<div
-													{...props}
-													class="flex h-full min-h-10 items-center justify-center px-2 py-2 font-bold transition-colors"
-													style="
-														background-color: {row.color};
-														opacity: {getCellOpacity(cell.count)};
-														color: {row.textColor};
-													"
-												>
-													{cell.count}
-												</div>
-											{/snippet}
+									<Tooltip.Root delayDuration={150}>
+										<Tooltip.Trigger
+											class="flex h-full min-h-10 w-full cursor-default items-center justify-center px-2 py-2 font-bold transition-colors"
+											style="
+												background-color: {row.color};
+												opacity: {getCellOpacity(cell.count)};
+												color: {row.textColor};
+											"
+											type="button"
+										>
+											{cell.count}
 										</Tooltip.Trigger>
-										<Tooltip.Portal>
-											<Tooltip.Content class="max-w-xs">
-												<p class="mb-1 text-xs font-bold" style="color: {row.color};">
-													{row.className} &mdash; {ROLE_SHORT_LABELS[role]}
-												</p>
-												<p class="text-xs">{cell.players.join(', ')}</p>
-											</Tooltip.Content>
-										</Tooltip.Portal>
+										<Tooltip.Content class="max-w-xs">
+											<p class="mb-1 text-xs font-bold" style="color: {row.color};">
+												{row.className} &mdash; {ROLE_SHORT_LABELS[role]}
+											</p>
+											<p class="text-xs">{cell.players.join(', ')}</p>
+										</Tooltip.Content>
 									</Tooltip.Root>
 								{:else}
 									<div
