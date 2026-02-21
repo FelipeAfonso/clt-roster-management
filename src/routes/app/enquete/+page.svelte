@@ -11,7 +11,10 @@
 	import ClassDistribution from '$lib/components/dashboard/ClassDistribution.svelte';
 	import ClassRoleMatrix from '$lib/components/dashboard/ClassRoleMatrix.svelte';
 	import AvailabilityHeatmap from '$lib/components/dashboard/AvailabilityHeatmap.svelte';
+	import ResponseEditDialog from '$lib/components/ResponseEditDialog.svelte';
 	import { RAID_STATUS_LABELS, type RaidStatus } from '$lib/constants';
+	import { PencilIcon } from '@lucide/svelte';
+	import type { Id } from '$convex/_generated/dataModel';
 
 	const responses = useQuery(api.pollResponses.listResponses, {});
 
@@ -21,6 +24,25 @@
 	let notInterestedCount = $derived(
 		responses.data?.filter((r) => r.raidStatus === 'not_interested').length ?? 0
 	);
+
+	// Edit dialog state
+	type ResponseData = {
+		_id: Id<'pollResponses'>;
+		name: string;
+		classes: string[];
+		roles: string[];
+		raidStatus: string;
+		availableDate?: string;
+		availability?: Record<string, boolean>;
+	};
+
+	let editDialogOpen = $state(false);
+	let editingResponse = $state<ResponseData | null>(null);
+
+	function openEdit(response: ResponseData): void {
+		editingResponse = response;
+		editDialogOpen = true;
+	}
 </script>
 
 <svelte:head>
@@ -80,21 +102,18 @@
 				<!-- Dashboard Tab -->
 				<Tabs.Content value="dashboard">
 					<div class="flex flex-col gap-8">
-						<!-- Class Distribution -->
 						<Card.Root>
 							<Card.Content class="p-4 sm:p-6">
 								<ClassDistribution responses={responses.data} />
 							</Card.Content>
 						</Card.Root>
 
-						<!-- Class × Role Matrix -->
 						<Card.Root>
 							<Card.Content class="p-4 sm:p-6">
 								<ClassRoleMatrix responses={responses.data} />
 							</Card.Content>
 						</Card.Root>
 
-						<!-- Availability Heatmap -->
 						<Card.Root>
 							<Card.Content class="p-4 sm:p-6">
 								<AvailabilityHeatmap responses={responses.data} />
@@ -177,6 +196,14 @@
 														/>
 													</div>
 												{/if}
+
+												<!-- Edit button -->
+												<div class="flex gap-2 pt-2">
+													<Button variant="outline" size="sm" onclick={() => openEdit(response)}>
+														<PencilIcon class="mr-1.5 size-3.5" />
+														Editar
+													</Button>
+												</div>
 											</div>
 										</Accordion.Content>
 									</Accordion.Item>
@@ -187,5 +214,15 @@
 				</Tabs.Content>
 			</Tabs.Root>
 		</Tooltip.Provider>
+
+		<!-- Edit Dialog (rendered once, controlled by state) -->
+		{#if editingResponse}
+			<ResponseEditDialog
+				response={editingResponse}
+				bind:open={editDialogOpen}
+				onUpdated={() => (editingResponse = null)}
+				onDeleted={() => (editingResponse = null)}
+			/>
+		{/if}
 	{/if}
 </div>

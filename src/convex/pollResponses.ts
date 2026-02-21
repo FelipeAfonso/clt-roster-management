@@ -42,6 +42,37 @@ export const listResponses = query({
 	}
 });
 
+export const updateResponse = mutation({
+	args: {
+		id: v.id('pollResponses'),
+		classes: v.array(v.string()),
+		roles: v.array(v.string()),
+		raidStatus: v.union(v.literal('ready'), v.literal('later'), v.literal('not_interested')),
+		availableDate: v.optional(v.string()),
+		availability: v.optional(v.record(v.string(), v.boolean()))
+	},
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error('Not authenticated');
+		}
+		const { id, ...fields } = args;
+		await ctx.db.patch(id, fields);
+		return id;
+	}
+});
+
+export const deleteResponse = mutation({
+	args: { id: v.id('pollResponses') },
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error('Not authenticated');
+		}
+		await ctx.db.delete(args.id);
+	}
+});
+
 export const getResponseByName = query({
 	args: { name: v.string() },
 	handler: async (ctx, args) => {
