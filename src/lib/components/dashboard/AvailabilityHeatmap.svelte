@@ -143,7 +143,7 @@
 										type="button"
 									>
 										{#if slot.totalCount > 0}
-											<span>{slot.totalCount}</span>
+											<span>{slot.readyCount}</span>
 											{#if slot.laterCount > 0}
 												<span class="ml-0.5 text-[0.6rem] opacity-70">
 													+{slot.laterCount}
@@ -227,8 +227,7 @@
 			<span>Pico</span>
 		</div>
 		<div class="text-muted-foreground">
-			N&uacute;mero: total dispon&iacute;vel | <span class="opacity-70">+N</span>: inclui &quot;mais
-			tarde&quot;
+			N&uacute;mero: prontos | <span class="opacity-70">+N</span>: &quot;mais tarde&quot;
 		</div>
 	</div>
 </div>
