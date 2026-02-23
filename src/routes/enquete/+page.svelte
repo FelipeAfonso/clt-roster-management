@@ -155,6 +155,11 @@
 
 			<fieldset>
 				<legend class="mb-2 font-medium">Disponibilidade para raid</legend>
+				<p class="mb-3 text-sm text-muted-foreground">
+					The War Within lan&ccedil;a dia <strong>03/03</strong> &mdash; a partir dessa data
+					voc&ecirc; poder&aacute; upar seu personagem para lvl 90 e se preparar. Raids abrem dia
+					<strong>16/03</strong>.
+				</p>
 				<RadioGroup.Root bind:value={raidStatus}>
 					{#each RAID_STATUSES as status (status)}
 						<Label class="flex items-center gap-2">
@@ -174,7 +179,7 @@
 						id="available-date"
 						type="date"
 						bind:value={availableDate}
-						min="2026-03-03"
+						min="2026-03-16"
 						class="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm"
 						required
 					/>

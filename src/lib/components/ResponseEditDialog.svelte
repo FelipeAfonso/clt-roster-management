@@ -152,7 +152,7 @@
 								id="edit-available-date"
 								type="date"
 								bind:value={availableDate}
-								min="2026-03-03"
+								min="2026-03-16"
 								class="mt-1 w-full border border-input bg-background px-3 py-2 text-sm"
 								required
 							/>

@@ -25,8 +25,8 @@ export const RAID_STATUSES = ['ready', 'later', 'not_interested'] as const;
 export type RaidStatus = (typeof RAID_STATUSES)[number];
 
 export const RAID_STATUS_LABELS: Record<RaidStatus, string> = {
-	ready: 'Pronto para 3 de Mar\u00e7o',
-	later: 'Interessado, mas s\u00f3 depois',
+	ready: 'Vou come\u00e7ar a upar dia 03/03 e estarei pronto pra raid at\u00e9 16/03',
+	later: 'Interessado, mas s\u00f3 consigo depois de 16/03',
 	not_interested: 'N\u00e3o tenho interesse em raidar'
 };
 

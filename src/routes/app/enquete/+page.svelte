@@ -7,13 +7,14 @@
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import AvailabilityGrid from '$lib/components/AvailabilityGrid.svelte';
 	import ClassDistribution from '$lib/components/dashboard/ClassDistribution.svelte';
 	import ClassRoleMatrix from '$lib/components/dashboard/ClassRoleMatrix.svelte';
 	import AvailabilityHeatmap from '$lib/components/dashboard/AvailabilityHeatmap.svelte';
 	import ResponseEditDialog from '$lib/components/ResponseEditDialog.svelte';
 	import { RAID_STATUS_LABELS, type RaidStatus } from '$lib/constants';
-	import { PencilIcon } from '@lucide/svelte';
+	import { PencilIcon, FilterIcon, XIcon } from '@lucide/svelte';
 	import type { Id } from '$convex/_generated/dataModel';
 
 	const responses = useQuery(api.pollResponses.listResponses, {});
@@ -24,6 +25,39 @@
 	let notInterestedCount = $derived(
 		responses.data?.filter((r) => r.raidStatus === 'not_interested').length ?? 0
 	);
+
+	// Filter state — track excluded names; everyone is included by default
+	let excludedNames = $state<string[]>([]);
+
+	let allNames = $derived(
+		[...new Set((responses.data ?? []).map((r) => r.name))].sort((a, b) =>
+			a.localeCompare(b, 'pt-BR')
+		)
+	);
+
+	let selectedNames = $derived(allNames.filter((n) => !excludedNames.includes(n)));
+
+	let filteredResponses = $derived.by(() => {
+		const all = responses.data ?? [];
+		if (excludedNames.length === 0) return all;
+		const excluded = new Set(excludedNames);
+		return all.filter((r) => !excluded.has(r.name));
+	});
+
+	let isFiltered = $derived(excludedNames.length > 0);
+	let filteredCount = $derived(filteredResponses.length);
+
+	function onSelectedNamesChange(names: string[]): void {
+		excludedNames = allNames.filter((n) => !names.includes(n));
+	}
+
+	function resetFilter(): void {
+		excludedNames = [];
+	}
+
+	function excludeAll(): void {
+		excludedNames = [...allNames];
+	}
 
 	// Edit dialog state
 	type ResponseData = {
@@ -88,6 +122,77 @@
 			</Card.Root>
 		</div>
 
+		<!-- Filter bar -->
+		<div class="mb-4 flex flex-wrap items-center gap-2">
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger>
+					<Button variant="outline" size="sm" class="gap-2">
+						<FilterIcon class="size-3.5" />
+						Filtrar por nome
+						{#if isFiltered}
+							<Badge variant="default" class="ml-0.5 px-1.5 py-0 text-[0.65rem]">
+								&minus;{excludedNames.length}
+							</Badge>
+						{/if}
+					</Button>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content align="start" class="max-h-72 w-56 overflow-y-auto">
+					<!-- Select all / clear actions -->
+					<div class="flex items-center gap-1 px-2 py-1.5">
+						<button
+							onclick={resetFilter}
+							class="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+						>
+							Todos
+						</button>
+						<span class="text-xs text-muted-foreground">/</span>
+						<button
+							onclick={excludeAll}
+							class="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+						>
+							Nenhum
+						</button>
+					</div>
+					<DropdownMenu.Separator />
+					<DropdownMenu.CheckboxGroup value={selectedNames} onValueChange={onSelectedNamesChange}>
+						{#each allNames as name (name)}
+							<DropdownMenu.CheckboxItem value={name}>
+								{name}
+							</DropdownMenu.CheckboxItem>
+						{/each}
+					</DropdownMenu.CheckboxGroup>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+
+			{#if isFiltered}
+				<div class="flex flex-wrap items-center gap-1.5">
+					{#each excludedNames as name (name)}
+						<Badge variant="outline" class="gap-1 pr-1 line-through opacity-60">
+							{name}
+							<button
+								onclick={() => {
+									excludedNames = excludedNames.filter((n) => n !== name);
+								}}
+								class="ml-0.5 transition-colors hover:text-red"
+								aria-label="Incluir {name}"
+							>
+								<XIcon class="size-3" />
+							</button>
+						</Badge>
+					{/each}
+					<button
+						onclick={resetFilter}
+						class="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+					>
+						Restaurar todos
+					</button>
+				</div>
+				<span class="ml-auto shrink-0 text-xs font-bold text-muted-foreground">
+					{filteredCount} de {totalCount}
+				</span>
+			{/if}
+		</div>
+
 		<Tooltip.Provider>
 			<Tabs.Root value="dashboard">
 				<Tabs.List class="mb-4 w-full">
@@ -104,19 +209,19 @@
 					<div class="flex flex-col gap-8">
 						<Card.Root>
 							<Card.Content class="p-4 sm:p-6">
-								<ClassDistribution responses={responses.data} />
+								<ClassDistribution responses={filteredResponses} />
 							</Card.Content>
 						</Card.Root>
 
 						<Card.Root>
 							<Card.Content class="p-4 sm:p-6">
-								<ClassRoleMatrix responses={responses.data} />
+								<ClassRoleMatrix responses={filteredResponses} />
 							</Card.Content>
 						</Card.Root>
 
 						<Card.Root>
 							<Card.Content class="p-4 sm:p-6">
-								<AvailabilityHeatmap responses={responses.data} />
+								<AvailabilityHeatmap responses={filteredResponses} />
 							</Card.Content>
 						</Card.Root>
 					</div>
@@ -125,11 +230,17 @@
 				<!-- Respostas Tab -->
 				<Tabs.Content value="respostas">
 					<div class="mx-auto max-w-2xl">
-						{#if responses.data.length === 0}
-							<p class="text-center text-muted-foreground">Nenhuma resposta ainda.</p>
+						{#if filteredResponses.length === 0}
+							{#if isFiltered}
+								<p class="text-center text-muted-foreground">
+									Nenhuma resposta encontrada para os nomes selecionados.
+								</p>
+							{:else}
+								<p class="text-center text-muted-foreground">Nenhuma resposta ainda.</p>
+							{/if}
 						{:else}
 							<Accordion.Root type="multiple">
-								{#each responses.data as response (response._id)}
+								{#each filteredResponses as response (response._id)}
 									<Accordion.Item value={response._id}>
 										<Accordion.Trigger class="text-left">
 											<div class="flex flex-1 items-center justify-between pr-2">
