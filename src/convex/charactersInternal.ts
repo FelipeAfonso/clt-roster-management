@@ -119,7 +119,12 @@ export const applySync = internalMutation({
 				name: v.string(),
 				itemLevel: v.number(),
 				quality: v.optional(v.string()),
-				enchantments: v.optional(v.array(v.object({ displayString: v.string() })))
+				enchantments: v.optional(v.array(v.object({ displayString: v.string() }))),
+				sockets: v.optional(
+					v.array(
+						v.object({ type: v.string(), filled: v.boolean(), gemName: v.optional(v.string()) })
+					)
+				)
 			})
 		)
 	},

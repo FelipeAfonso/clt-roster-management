@@ -2,7 +2,7 @@
 	import { useAuthState } from '$lib/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { ClipboardList } from '@lucide/svelte';
+	import { ClipboardList, Users } from '@lucide/svelte';
 
 	const auth = useAuthState();
 </script>
@@ -28,6 +28,20 @@
 			</Card.Header>
 			<Card.Footer>
 				<Button href="/enquete" size="sm">Responder enquete</Button>
+			</Card.Footer>
+		</Card.Root>
+		<Card.Root>
+			<Card.Header>
+				<div class="flex items-center gap-2">
+					<Users class="size-5 text-muted-foreground" />
+					<Card.Title>Roster</Card.Title>
+				</div>
+				<Card.Description
+					>Gerencie os personagens e acompanhe o progresso de gear da guild.</Card.Description
+				>
+			</Card.Header>
+			<Card.Footer>
+				<Button href="/app/roster" size="sm">Ver roster</Button>
 			</Card.Footer>
 		</Card.Root>
 	</div>

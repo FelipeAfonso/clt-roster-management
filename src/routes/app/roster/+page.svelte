@@ -105,6 +105,7 @@
 		name: string;
 		itemLevel: number;
 		enchantments?: { displayString: string }[];
+		sockets?: { type: string; filled: boolean; gemName?: string }[];
 	};
 
 	function enchantScore(items: EquippedItem[] | undefined): {
@@ -125,6 +126,28 @@
 			}
 		}
 		return { count, total: applicable.length, missing };
+	}
+
+	function gemScore(items: EquippedItem[] | undefined): {
+		count: number;
+		total: number;
+		missing: string[];
+	} {
+		if (!items) return { count: 0, total: 0, missing: [] };
+		let count = 0;
+		const missing: string[] = [];
+		for (const item of items) {
+			if (!item.sockets?.length) continue;
+			for (const socket of item.sockets) {
+				if (socket.filled) {
+					count++;
+				} else {
+					missing.push(GEAR_SLOT_LABELS[item.slot] ?? item.slot);
+				}
+			}
+		}
+		const total = count + missing.length;
+		return { count, total, missing };
 	}
 
 	function enchantColorClass(count: number, total: number): string {
@@ -199,6 +222,7 @@
 						<th class="px-3 py-2 text-right font-medium">Ilvl M&eacute;dio</th>
 						<th class="px-3 py-2 text-right font-medium">Ilvl Equipado</th>
 						<th class="px-3 py-2 text-center font-medium">Encantos</th>
+						<th class="px-3 py-2 text-center font-medium">Gemas</th>
 						<th class="px-3 py-2 text-left font-medium">&Uacute;ltima sync</th>
 						<th class="px-3 py-2 text-left font-medium">Status</th>
 						<th class="px-3 py-2 text-right font-medium">A&ccedil;&otilde;es</th>
@@ -281,6 +305,41 @@
 														{/each}
 													{:else}
 														<p class="text-xs">Todos os slots encantados</p>
+													{/if}
+												</Tooltip.Content>
+											</Tooltip.Root>
+										</Tooltip.Provider>
+									{:else}
+										<span class="text-muted-foreground">—</span>
+									{/if}
+								{:else}
+									<span class="text-muted-foreground">—</span>
+								{/if}
+							</td>
+							<td class="px-3 py-2 text-center">
+								{#if char.equippedItems}
+									{@const gscore = gemScore(char.equippedItems)}
+									{#if gscore.total > 0}
+										<Tooltip.Provider>
+											<Tooltip.Root>
+												<Tooltip.Trigger>
+													<span
+														class="cursor-default font-mono font-semibold {enchantColorClass(
+															gscore.count,
+															gscore.total
+														)}"
+													>
+														{gscore.count}/{gscore.total}
+													</span>
+												</Tooltip.Trigger>
+												<Tooltip.Content>
+													{#if gscore.missing.length > 0}
+														<p class="mb-1 text-xs font-medium">Gemas faltando:</p>
+														{#each gscore.missing as slot (slot)}
+															<p class="text-xs">{slot}</p>
+														{/each}
+													{:else}
+														<p class="text-xs">Todas as gemas inseridas</p>
 													{/if}
 												</Tooltip.Content>
 											</Tooltip.Root>
@@ -390,8 +449,9 @@
 					{@const item = selectedCharacter.equippedItems?.find((i) => i.slot === slotKey)}
 					{@const needsEnchant = ENCHANTABLE_SLOTS.includes(slotKey)}
 					{@const missingEnchant = needsEnchant && !!item && !item.enchantments?.length}
+					{@const hasEmptySocket = !!item?.sockets?.some((s) => !s.filled)}
 					<div
-						class="rounded-md border p-2 {missingEnchant
+						class="rounded-md border p-2 {missingEnchant || hasEmptySocket
 							? 'border-yellow-500/50 bg-yellow-500/5'
 							: ''}"
 					>
@@ -402,10 +462,23 @@
 									<p class="truncate text-sm font-medium">{item.name}</p>
 									{#if item.enchantments?.length}
 										{#each item.enchantments as enchant (enchant.displayString)}
-											<p class="text-xs text-green-500">{enchant.displayString}</p>
+											<p class="text-xs text-green-700 dark:text-green-400">
+												{enchant.displayString}
+											</p>
 										{/each}
 									{:else if needsEnchant}
-										<p class="text-xs text-yellow-500">Sem encantamento</p>
+										<p class="text-xs text-amber-700 dark:text-amber-400">Sem encantamento</p>
+									{/if}
+									{#if item.sockets?.length}
+										{#each item.sockets as socket, si (si)}
+											{#if socket.filled}
+												<p class="text-xs text-sky-700 dark:text-sky-400">
+													&#9671; {socket.gemName}
+												</p>
+											{:else}
+												<p class="text-xs text-amber-700 dark:text-amber-400">&#9671; Gema vazia</p>
+											{/if}
+										{/each}
 									{/if}
 								{:else}
 									<p class="text-sm text-muted-foreground italic">Vazio</p>
