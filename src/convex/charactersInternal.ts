@@ -15,7 +15,8 @@ export const listCharacters = query({
 export const addCharacter = mutation({
 	args: {
 		name: v.string(),
-		realm: v.string()
+		realm: v.string(),
+		realmSlug: v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
@@ -23,7 +24,7 @@ export const addCharacter = mutation({
 			throw new Error('Not authenticated');
 		}
 		const nameSlug = args.name.toLowerCase().trim();
-		const realmSlug = args.realm.toLowerCase().trim().replace(/\s+/g, '-');
+		const realmSlug = args.realmSlug ?? args.realm.toLowerCase().trim().replace(/\s+/g, '-');
 		const existing = await ctx.db
 			.query('characters')
 			.withIndex('by_nameSlug_realmSlug', (q) =>

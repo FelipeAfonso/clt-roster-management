@@ -5,6 +5,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
+	import RealmCombobox from '$lib/components/RealmCombobox.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import * as Tooltip from '$lib/components/ui/tooltip';
@@ -20,7 +21,8 @@
 	const client = useConvexClient();
 
 	let newName = $state('');
-	let newRealm = $state('');
+	let newRealmSlug = $state('');
+	let newRealmName = $state('');
 	let addError = $state<string | null>(null);
 	let isAdding = $state(false);
 	let isSyncingAll = $state(false);
@@ -33,16 +35,18 @@
 	);
 
 	async function handleAdd(): Promise<void> {
-		if (!newName.trim() || !newRealm.trim()) return;
+		if (!newName.trim() || !newRealmSlug) return;
 		isAdding = true;
 		addError = null;
 		try {
 			await client.mutation(api.charactersInternal.addCharacter, {
 				name: newName.trim(),
-				realm: newRealm.trim()
+				realm: newRealmName,
+				realmSlug: newRealmSlug
 			});
 			newName = '';
-			newRealm = '';
+			newRealmSlug = '';
+			newRealmName = '';
 		} catch (err) {
 			addError = err instanceof Error ? err.message : 'Erro ao adicionar personagem';
 		} finally {
@@ -120,17 +124,8 @@
 			onkeydown={(e) => e.key === 'Enter' && handleAdd()}
 			class="max-w-48"
 		/>
-		<Input
-			placeholder="Realm (ex: azralon)"
-			bind:value={newRealm}
-			onkeydown={(e) => e.key === 'Enter' && handleAdd()}
-			class="max-w-48"
-		/>
-		<Button
-			onclick={handleAdd}
-			disabled={isAdding || !newName.trim() || !newRealm.trim()}
-			size="sm"
-		>
+		<RealmCombobox bind:value={newRealmSlug} onselect={(r) => (newRealmName = r.name)} />
+		<Button onclick={handleAdd} disabled={isAdding || !newName.trim() || !newRealmSlug} size="sm">
 			<Plus class="mr-1 size-4" />
 			Adicionar
 		</Button>

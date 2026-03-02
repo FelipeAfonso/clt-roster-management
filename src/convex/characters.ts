@@ -128,6 +128,26 @@ export const syncCharacter = action({
 	}
 });
 
+export const listRealms = action({
+	args: {},
+	handler: async (): Promise<Array<{ name: string; slug: string }>> => {
+		const token = await fetchBattleNetToken();
+		const res = await fetch(
+			'https://us.api.blizzard.com/data/wow/realm/index?namespace=dynamic-us&locale=pt_BR',
+			{ headers: { Authorization: `Bearer ${token}` } }
+		);
+		if (!res.ok) {
+			const body = await res.text();
+			console.error(`[bnet] realm index fetch failed: ${res.status} ${res.statusText}`, body);
+			throw new Error(`Realm list fetch failed: ${res.status}`);
+		}
+		const data = (await res.json()) as { realms: Array<{ name: string; slug: string }> };
+		return data.realms
+			.map((r) => ({ name: r.name, slug: r.slug }))
+			.sort((a, b) => a.name.localeCompare(b.name));
+	}
+});
+
 export const syncAllCharacters = action({
 	args: {},
 	handler: async (ctx) => {
