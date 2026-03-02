@@ -64,3 +64,57 @@ export function makeSlotKey(day: string, time: string): string {
 }
 
 export const LOCAL_STORAGE_KEY = 'clt-poll-player-name';
+
+export const WOW_CLASS_COLORS_BY_ID: Record<number, string> = {
+	1: '#C69B3A',
+	2: '#F58CBA',
+	3: '#ABD473',
+	4: '#FFF569',
+	5: '#FFFFFF',
+	6: '#C41F3B',
+	7: '#0070DE',
+	8: '#69CCF0',
+	9: '#9482C9',
+	10: '#00FF96',
+	11: '#FF7D0A',
+	12: '#A330C9',
+	13: '#40C7EB'
+};
+
+export const GEAR_SLOT_ORDER = [
+	'HEAD',
+	'NECK',
+	'SHOULDER',
+	'BACK',
+	'CHEST',
+	'WRIST',
+	'HANDS',
+	'WAIST',
+	'LEGS',
+	'FEET',
+	'FINGER_1',
+	'FINGER_2',
+	'TRINKET_1',
+	'TRINKET_2',
+	'MAIN_HAND',
+	'OFF_HAND'
+];
+
+export const GEAR_SLOT_LABELS: Record<string, string> = {
+	HEAD: 'Cabe\u00e7a',
+	NECK: 'Pesco\u00e7o',
+	SHOULDER: 'Ombros',
+	BACK: 'Costas',
+	CHEST: 'Peitoral',
+	WRIST: 'Pulso',
+	HANDS: 'M\u00e3os',
+	WAIST: 'Cintura',
+	LEGS: 'Pernas',
+	FEET: 'P\u00e9s',
+	FINGER_1: 'Anel 1',
+	FINGER_2: 'Anel 2',
+	TRINKET_1: 'Talism\u00e3 1',
+	TRINKET_2: 'Talism\u00e3 2',
+	MAIN_HAND: 'M\u00e3o Principal',
+	OFF_HAND: 'M\u00e3o Secund\u00e1ria'
+};

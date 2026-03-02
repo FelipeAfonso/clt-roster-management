@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useAuthState, useAuthActions } from '$lib/auth.svelte';
 	import { page } from '$app/state';
-	import { ClipboardList, Home, LogOut, Menu } from '@lucide/svelte';
+	import { ClipboardList, Home, LogOut, Menu, Users } from '@lucide/svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Avatar from '$lib/components/ui/avatar';
@@ -15,7 +15,8 @@
 
 	const navItems = [
 		{ href: '/app', label: 'In\u00edcio', icon: Home },
-		{ href: '/app/enquete', label: 'Enquete', icon: ClipboardList }
+		{ href: '/app/enquete', label: 'Enquete', icon: ClipboardList },
+		{ href: '/app/roster', label: 'Roster', icon: Users }
 	];
 
 	let currentPath = $derived(page.url.pathname);
