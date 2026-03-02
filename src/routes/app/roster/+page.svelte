@@ -88,6 +88,52 @@
 		gearPanelOpen = true;
 	}
 
+	const ENCHANTABLE_SLOTS = [
+		'MAIN_HAND',
+		'OFF_HAND',
+		'FINGER_1',
+		'FINGER_2',
+		'SHOULDER',
+		'CHEST',
+		'HEAD',
+		'LEGS',
+		'FEET'
+	];
+
+	type EquippedItem = {
+		slot: string;
+		name: string;
+		itemLevel: number;
+		enchantments?: { displayString: string }[];
+	};
+
+	function enchantScore(items: EquippedItem[] | undefined): {
+		count: number;
+		total: number;
+		missing: string[];
+	} {
+		if (!items) return { count: 0, total: 0, missing: [] };
+		let count = 0;
+		const missing: string[] = [];
+		const applicable = ENCHANTABLE_SLOTS.filter((s) => items.some((i) => i.slot === s));
+		for (const slot of applicable) {
+			const item = items.find((i) => i.slot === slot);
+			if (item?.enchantments?.length) {
+				count++;
+			} else {
+				missing.push(GEAR_SLOT_LABELS[slot] ?? slot);
+			}
+		}
+		return { count, total: applicable.length, missing };
+	}
+
+	function enchantColorClass(count: number, total: number): string {
+		if (total === 0) return 'text-muted-foreground';
+		if (count === total) return 'text-green-500';
+		if (count <= 2) return 'text-red-500';
+		return 'text-yellow-500';
+	}
+
 	function formatDate(ts: number | undefined): string {
 		if (!ts) return '—';
 		return new Date(ts).toLocaleString('pt-BR', {
@@ -152,6 +198,7 @@
 						<th class="px-3 py-2 text-left font-medium">Spec</th>
 						<th class="px-3 py-2 text-right font-medium">Ilvl M&eacute;dio</th>
 						<th class="px-3 py-2 text-right font-medium">Ilvl Equipado</th>
+						<th class="px-3 py-2 text-center font-medium">Encantos</th>
 						<th class="px-3 py-2 text-left font-medium">&Uacute;ltima sync</th>
 						<th class="px-3 py-2 text-left font-medium">Status</th>
 						<th class="px-3 py-2 text-right font-medium">A&ccedil;&otilde;es</th>
@@ -210,6 +257,41 @@
 							<td class="px-3 py-2">{char.spec ?? '—'}</td>
 							<td class="px-3 py-2 text-right font-mono">{char.averageItemLevel ?? '—'}</td>
 							<td class="px-3 py-2 text-right font-mono">{char.equippedItemLevel ?? '—'}</td>
+							<td class="px-3 py-2 text-center">
+								{#if char.equippedItems}
+									{@const score = enchantScore(char.equippedItems)}
+									{#if score.total > 0}
+										<Tooltip.Provider>
+											<Tooltip.Root>
+												<Tooltip.Trigger>
+													<span
+														class="cursor-default font-mono font-semibold {enchantColorClass(
+															score.count,
+															score.total
+														)}"
+													>
+														{score.count}/{score.total}
+													</span>
+												</Tooltip.Trigger>
+												<Tooltip.Content>
+													{#if score.missing.length > 0}
+														<p class="mb-1 text-xs font-medium">Sem encantamento:</p>
+														{#each score.missing as slot (slot)}
+															<p class="text-xs">{slot}</p>
+														{/each}
+													{:else}
+														<p class="text-xs">Todos os slots encantados</p>
+													{/if}
+												</Tooltip.Content>
+											</Tooltip.Root>
+										</Tooltip.Provider>
+									{:else}
+										<span class="text-muted-foreground">—</span>
+									{/if}
+								{:else}
+									<span class="text-muted-foreground">—</span>
+								{/if}
+							</td>
 							<td class="px-3 py-2 text-xs text-muted-foreground"
 								>{formatDate(char.lastSyncedAt)}</td
 							>
@@ -306,7 +388,13 @@
 			<div class="mt-4 space-y-2 overflow-y-auto px-4 pb-4">
 				{#each GEAR_SLOT_ORDER as slotKey (slotKey)}
 					{@const item = selectedCharacter.equippedItems?.find((i) => i.slot === slotKey)}
-					<div class="rounded-md border p-2">
+					{@const needsEnchant = ENCHANTABLE_SLOTS.includes(slotKey)}
+					{@const missingEnchant = needsEnchant && !!item && !item.enchantments?.length}
+					<div
+						class="rounded-md border p-2 {missingEnchant
+							? 'border-yellow-500/50 bg-yellow-500/5'
+							: ''}"
+					>
 						<div class="flex items-baseline justify-between gap-2">
 							<div class="min-w-0 flex-1">
 								<p class="text-xs text-muted-foreground">{GEAR_SLOT_LABELS[slotKey] ?? slotKey}</p>
@@ -316,6 +404,8 @@
 										{#each item.enchantments as enchant (enchant.displayString)}
 											<p class="text-xs text-green-500">{enchant.displayString}</p>
 										{/each}
+									{:else if needsEnchant}
+										<p class="text-xs text-yellow-500">Sem encantamento</p>
 									{/if}
 								{:else}
 									<p class="text-sm text-muted-foreground italic">Vazio</p>
