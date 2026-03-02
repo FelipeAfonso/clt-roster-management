@@ -9,7 +9,12 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { Plus, RefreshCw, Trash2, Shield } from '@lucide/svelte';
-	import { WOW_CLASS_COLORS_BY_ID, GEAR_SLOT_ORDER, GEAR_SLOT_LABELS } from '$lib/constants';
+	import {
+		WOW_CLASS_COLORS_BY_ID,
+		GEAR_SLOT_ORDER,
+		GEAR_SLOT_LABELS,
+		ROSTER_ROLES
+	} from '$lib/constants';
 
 	const characters = useQuery(api.charactersInternal.listCharacters, {});
 	const client = useConvexClient();
@@ -47,6 +52,13 @@
 
 	async function handleDelete(id: Id<'characters'>): Promise<void> {
 		await client.mutation(api.charactersInternal.deleteCharacter, { id });
+	}
+
+	async function handleUpdateMeta(
+		id: Id<'characters'>,
+		fields: { playerName?: string; role?: string }
+	): Promise<void> {
+		await client.mutation(api.charactersInternal.updateCharacterMeta, { id, ...fields });
 	}
 
 	async function handleSync(id: Id<'characters'>): Promise<void> {
@@ -137,8 +149,9 @@
 			<table class="w-full text-sm">
 				<thead>
 					<tr class="border-b bg-muted/50">
-						<th class="px-3 py-2 text-left font-medium">Nome</th>
-						<th class="px-3 py-2 text-left font-medium">Realm</th>
+						<th class="px-3 py-2 text-left font-medium">Jogador</th>
+						<th class="px-3 py-2 text-left font-medium">Papel</th>
+						<th class="px-3 py-2 text-left font-medium">Personagem</th>
 						<th class="px-3 py-2 text-right font-medium">N&iacute;vel</th>
 						<th class="px-3 py-2 text-left font-medium">Classe</th>
 						<th class="px-3 py-2 text-left font-medium">Spec</th>
@@ -154,8 +167,41 @@
 						{@const classColor =
 							char.classId != null ? (WOW_CLASS_COLORS_BY_ID[char.classId] ?? null) : null}
 						<tr class="border-b last:border-0 hover:bg-muted/30">
-							<td class="px-3 py-2 font-medium">{char.name}</td>
-							<td class="px-3 py-2 text-muted-foreground">{char.realm}</td>
+							<td class="px-3 py-1">
+								<input
+									type="text"
+									class="w-28 rounded bg-transparent px-1 py-0.5 text-sm outline-none placeholder:text-muted-foreground/50 focus:ring-1 focus:ring-ring"
+									placeholder="—"
+									value={char.playerName ?? ''}
+									onblur={(e) => {
+										const val = (e.currentTarget as HTMLInputElement).value.trim();
+										const current = char.playerName ?? '';
+										if (val !== current) {
+											handleUpdateMeta(char._id, { playerName: val || undefined });
+										}
+									}}
+								/>
+							</td>
+							<td class="px-3 py-1">
+								<select
+									class="w-36 rounded border border-input bg-background px-1.5 py-0.5 text-sm text-foreground focus:ring-1 focus:ring-ring focus:outline-none"
+									value={char.role ?? ''}
+									onchange={(e) => {
+										const val = (e.currentTarget as HTMLSelectElement).value;
+										handleUpdateMeta(char._id, { role: val || undefined });
+									}}
+								>
+									<option value="">—</option>
+									{#each ROSTER_ROLES as r (r)}
+										<option value={r}>{r}</option>
+									{/each}
+								</select>
+							</td>
+							<td class="px-3 py-2">
+								<span class="font-medium">{char.name}</span><span class="text-muted-foreground"
+									>-{char.realm}</span
+								>
+							</td>
 							<td class="px-3 py-2 text-right">{char.level ?? '—'}</td>
 							<td class="px-3 py-2">
 								{#if char.class}

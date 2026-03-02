@@ -15,6 +15,8 @@ export default defineSchema({
 		nameSlug: v.string(),
 		realm: v.string(),
 		realmSlug: v.string(),
+		playerName: v.optional(v.string()),
+		role: v.optional(v.string()),
 		syncStatus: v.union(
 			v.literal('pending'),
 			v.literal('syncing'),

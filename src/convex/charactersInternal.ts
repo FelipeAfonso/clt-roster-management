@@ -43,6 +43,22 @@ export const addCharacter = mutation({
 	}
 });
 
+export const updateCharacterMeta = mutation({
+	args: {
+		id: v.id('characters'),
+		playerName: v.optional(v.string()),
+		role: v.optional(v.string())
+	},
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error('Not authenticated');
+		}
+		const { id, ...fields } = args;
+		await ctx.db.patch(id, fields);
+	}
+});
+
 export const deleteCharacter = mutation({
 	args: { id: v.id('characters') },
 	handler: async (ctx, args) => {

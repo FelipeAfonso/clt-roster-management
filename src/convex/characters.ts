@@ -5,6 +5,7 @@ import { action } from './_generated/server';
 import { api, internal } from './_generated/api';
 
 async function fetchBattleNetToken(): Promise<string> {
+	console.log('[bnet] fetching OAuth token');
 	const credentials = Buffer.from(
 		`${process.env.BATTLE_NET_CLIENT_ID}:${process.env.BATTLE_NET_CLIENT_SECRET}`
 	).toString('base64');
@@ -16,7 +17,13 @@ async function fetchBattleNetToken(): Promise<string> {
 		},
 		body: 'grant_type=client_credentials'
 	});
+	if (!res.ok) {
+		const body = await res.text();
+		console.error(`[bnet] token request failed: ${res.status} ${res.statusText}`, body);
+		throw new Error(`Battle.net token request failed: ${res.status}`);
+	}
 	const data = (await res.json()) as { access_token: string };
+	console.log('[bnet] token acquired');
 	return data.access_token;
 }
 
@@ -36,13 +43,23 @@ export const syncCharacter = action({
 			if (!character) {
 				throw new Error('Character not found');
 			}
+
+			const tag = `[bnet:${character.nameSlug}-${character.realmSlug}]`;
+			console.log(`${tag} starting sync`);
+
 			const token = await fetchBattleNetToken();
 			const headers = { Authorization: `Bearer ${token}` };
-			const profileRes = await fetch(
-				`https://us.api.blizzard.com/profile/wow/character/${character.realmSlug}/${character.nameSlug}?namespace=profile-us&locale=pt_BR`,
-				{ headers }
-			);
+
+			// --- Profile ---
+			const profileUrl = `https://us.api.blizzard.com/profile/wow/character/${character.realmSlug}/${character.nameSlug}?namespace=profile-us&locale=pt_BR`;
+			console.log(`${tag} GET profile`, profileUrl);
+			const profileRes = await fetch(profileUrl, { headers });
 			if (!profileRes.ok) {
+				const body = await profileRes.text();
+				console.error(
+					`${tag} profile fetch failed: ${profileRes.status} ${profileRes.statusText}`,
+					body
+				);
 				throw new Error(`Profile fetch failed: ${profileRes.status}`);
 			}
 			const profile = (await profileRes.json()) as {
@@ -52,11 +69,20 @@ export const syncCharacter = action({
 				average_item_level?: number;
 				equipped_item_level?: number;
 			};
-			const equipRes = await fetch(
-				`https://us.api.blizzard.com/profile/wow/character/${character.realmSlug}/${character.nameSlug}/equipment?namespace=profile-us&locale=pt_BR`,
-				{ headers }
+			console.log(
+				`${tag} profile ok — level=${profile.level} class=${profile.character_class?.name} spec=${profile.active_spec?.name} avgIlvl=${profile.average_item_level}`
 			);
+
+			// --- Equipment ---
+			const equipUrl = `https://us.api.blizzard.com/profile/wow/character/${character.realmSlug}/${character.nameSlug}/equipment?namespace=profile-us&locale=pt_BR`;
+			console.log(`${tag} GET equipment`, equipUrl);
+			const equipRes = await fetch(equipUrl, { headers });
 			if (!equipRes.ok) {
+				const body = await equipRes.text();
+				console.error(
+					`${tag} equipment fetch failed: ${equipRes.status} ${equipRes.statusText}`,
+					body
+				);
 				throw new Error(`Equipment fetch failed: ${equipRes.status}`);
 			}
 			const equipment = (await equipRes.json()) as {
@@ -77,6 +103,8 @@ export const syncCharacter = action({
 					displayString: e.display_string ?? ''
 				}))
 			}));
+			console.log(`${tag} equipment ok — ${equippedItems.length} slots`);
+
 			await ctx.runMutation(internal.charactersInternal.applySync, {
 				id: args.id,
 				level: profile.level ?? 0,
@@ -87,8 +115,10 @@ export const syncCharacter = action({
 				equippedItemLevel: profile.equipped_item_level ?? 0,
 				equippedItems
 			});
+			console.log(`${tag} sync complete`);
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
+			console.error(`[bnet:${args.id}] sync failed:`, msg);
 			await ctx.runMutation(internal.charactersInternal.setSyncStatus, {
 				id: args.id,
 				status: 'error',
@@ -106,8 +136,10 @@ export const syncAllCharacters = action({
 			throw new Error('Not authenticated');
 		}
 		const characters = await ctx.runQuery(internal.charactersInternal.listAll);
+		console.log(`[bnet] syncAll — ${characters.length} character(s)`);
 		for (const character of characters) {
 			await ctx.runAction(api.characters.syncCharacter, { id: character._id });
 		}
+		console.log('[bnet] syncAll complete');
 	}
 });

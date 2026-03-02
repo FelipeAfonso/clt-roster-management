@@ -65,6 +65,16 @@ export function makeSlotKey(day: string, time: string): string {
 
 export const LOCAL_STORAGE_KEY = 'clt-poll-player-name';
 
+export const ROSTER_ROLES = [
+	'Tank',
+	'Healer',
+	'Flex Healer',
+	'DPS a Dist\u00e2ncia',
+	'DPS Corpo a Corpo'
+] as const;
+
+export type RosterRole = (typeof ROSTER_ROLES)[number];
+
 export const WOW_CLASS_COLORS_BY_ID: Record<number, string> = {
 	1: '#C69B3A',
 	2: '#F58CBA',
