@@ -9,7 +9,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { Plus, RefreshCw, Trash2, Shield } from '@lucide/svelte';
+	import { Plus, RefreshCw, Trash2, Shield, ArrowUpDown, ArrowUp, ArrowDown } from '@lucide/svelte';
 	import {
 		WOW_CLASS_COLORS_BY_ID,
 		GEAR_SLOT_ORDER,
@@ -19,6 +19,115 @@
 
 	const characters = useQuery(api.charactersInternal.listCharacters, {});
 	const client = useConvexClient();
+
+	type SortColumn =
+		| 'playerName'
+		| 'role'
+		| 'name'
+		| 'level'
+		| 'class'
+		| 'spec'
+		| 'averageItemLevel'
+		| 'equippedItemLevel'
+		| 'enchants'
+		| 'gems'
+		| 'lastSyncedAt'
+		| 'syncStatus';
+	type SortDirection = 'asc' | 'desc';
+
+	let sortColumn = $state<SortColumn | null>(null);
+	let sortDirection = $state<SortDirection>('asc');
+
+	function toggleSort(column: SortColumn): void {
+		if (sortColumn === column) {
+			if (sortDirection === 'asc') {
+				sortDirection = 'desc';
+			} else {
+				sortColumn = null;
+				sortDirection = 'asc';
+			}
+		} else {
+			sortColumn = column;
+			sortDirection = 'asc';
+		}
+	}
+
+	let sortedCharacters = $derived.by(() => {
+		const data = characters.data;
+		if (!data || !sortColumn) return data;
+
+		const col = sortColumn;
+		const dir = sortDirection === 'asc' ? 1 : -1;
+
+		return [...data].sort((a, b) => {
+			let av: string | number | undefined;
+			let bv: string | number | undefined;
+
+			switch (col) {
+				case 'playerName':
+					av = a.playerName?.toLowerCase();
+					bv = b.playerName?.toLowerCase();
+					break;
+				case 'role':
+					av = a.role?.toLowerCase();
+					bv = b.role?.toLowerCase();
+					break;
+				case 'name':
+					av = a.name.toLowerCase();
+					bv = b.name.toLowerCase();
+					break;
+				case 'level':
+					av = a.level ?? undefined;
+					bv = b.level ?? undefined;
+					break;
+				case 'class':
+					av = a.class?.toLowerCase();
+					bv = b.class?.toLowerCase();
+					break;
+				case 'spec':
+					av = a.spec?.toLowerCase();
+					bv = b.spec?.toLowerCase();
+					break;
+				case 'averageItemLevel':
+					av = a.averageItemLevel ?? undefined;
+					bv = b.averageItemLevel ?? undefined;
+					break;
+				case 'equippedItemLevel':
+					av = a.equippedItemLevel ?? undefined;
+					bv = b.equippedItemLevel ?? undefined;
+					break;
+				case 'enchants': {
+					const ea = enchantScore(a.equippedItems);
+					const eb = enchantScore(b.equippedItems);
+					av = ea.total > 0 ? ea.count / ea.total : undefined;
+					bv = eb.total > 0 ? eb.count / eb.total : undefined;
+					break;
+				}
+				case 'gems': {
+					const ga = gemScore(a.equippedItems);
+					const gb = gemScore(b.equippedItems);
+					av = ga.total > 0 ? ga.count / ga.total : undefined;
+					bv = gb.total > 0 ? gb.count / gb.total : undefined;
+					break;
+				}
+				case 'lastSyncedAt':
+					av = a.lastSyncedAt ?? undefined;
+					bv = b.lastSyncedAt ?? undefined;
+					break;
+				case 'syncStatus':
+					av = a.syncStatus?.toLowerCase();
+					bv = b.syncStatus?.toLowerCase();
+					break;
+			}
+
+			if (av == null && bv == null) return 0;
+			if (av == null) return 1;
+			if (bv == null) return -1;
+			if (av < bv) return -1 * dir;
+			if (av > bv) return 1 * dir;
+			return 0;
+		});
+	});
 
 	let newName = $state('');
 	let newRealmSlug = $state('');
@@ -213,23 +322,191 @@
 			<table class="w-full text-sm">
 				<thead>
 					<tr class="border-b bg-muted/50">
-						<th class="px-3 py-2 text-left font-medium">Jogador</th>
-						<th class="px-3 py-2 text-left font-medium">Papel</th>
-						<th class="px-3 py-2 text-left font-medium">Personagem</th>
-						<th class="px-3 py-2 text-right font-medium">N&iacute;vel</th>
-						<th class="px-3 py-2 text-left font-medium">Classe</th>
-						<th class="px-3 py-2 text-left font-medium">Spec</th>
-						<th class="px-3 py-2 text-right font-medium">Ilvl M&eacute;dio</th>
-						<th class="px-3 py-2 text-right font-medium">Ilvl Equipado</th>
-						<th class="px-3 py-2 text-center font-medium">Encantos</th>
-						<th class="px-3 py-2 text-center font-medium">Gemas</th>
-						<th class="px-3 py-2 text-left font-medium">&Uacute;ltima sync</th>
-						<th class="px-3 py-2 text-left font-medium">Status</th>
+						<th class="px-3 py-2 text-left font-medium">
+							<button
+								class="inline-flex items-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('playerName')}
+							>
+								Jogador
+								{#if sortColumn === 'playerName' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'playerName' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-left font-medium">
+							<button
+								class="inline-flex items-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('role')}
+							>
+								Papel
+								{#if sortColumn === 'role' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'role' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-left font-medium">
+							<button
+								class="inline-flex items-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('name')}
+							>
+								Personagem
+								{#if sortColumn === 'name' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'name' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-right font-medium">
+							<button
+								class="inline-flex w-full items-center justify-end gap-1 hover:text-foreground"
+								onclick={() => toggleSort('level')}
+							>
+								N&iacute;vel
+								{#if sortColumn === 'level' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'level' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-left font-medium">
+							<button
+								class="inline-flex items-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('class')}
+							>
+								Classe
+								{#if sortColumn === 'class' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'class' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-left font-medium">
+							<button
+								class="inline-flex items-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('spec')}
+							>
+								Spec
+								{#if sortColumn === 'spec' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'spec' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-right font-medium">
+							<button
+								class="inline-flex w-full items-center justify-end gap-1 hover:text-foreground"
+								onclick={() => toggleSort('averageItemLevel')}
+							>
+								Ilvl M&eacute;dio
+								{#if sortColumn === 'averageItemLevel' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'averageItemLevel' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-right font-medium">
+							<button
+								class="inline-flex w-full items-center justify-end gap-1 hover:text-foreground"
+								onclick={() => toggleSort('equippedItemLevel')}
+							>
+								Ilvl Equipado
+								{#if sortColumn === 'equippedItemLevel' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'equippedItemLevel' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-center font-medium">
+							<button
+								class="inline-flex w-full items-center justify-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('enchants')}
+							>
+								Encantos
+								{#if sortColumn === 'enchants' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'enchants' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-center font-medium">
+							<button
+								class="inline-flex w-full items-center justify-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('gems')}
+							>
+								Gemas
+								{#if sortColumn === 'gems' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'gems' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-left font-medium">
+							<button
+								class="inline-flex items-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('lastSyncedAt')}
+							>
+								&Uacute;ltima sync
+								{#if sortColumn === 'lastSyncedAt' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'lastSyncedAt' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-left font-medium">
+							<button
+								class="inline-flex items-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('syncStatus')}
+							>
+								Status
+								{#if sortColumn === 'syncStatus' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'syncStatus' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
 						<th class="px-3 py-2 text-right font-medium">A&ccedil;&otilde;es</th>
 					</tr>
 				</thead>
 				<tbody>
-					{#each characters.data as char (char._id)}
+					{#each sortedCharacters ?? [] as char (char._id)}
 						{@const classColor =
 							char.classId != null ? (WOW_CLASS_COLORS_BY_ID[char.classId] ?? null) : null}
 						<tr class="border-b last:border-0 hover:bg-muted/30">
