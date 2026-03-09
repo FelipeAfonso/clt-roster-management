@@ -157,15 +157,36 @@ export const listRealms = action({
 export const syncAllCharacters = action({
 	args: {},
 	handler: async (ctx) => {
+		const startedAt = Date.now();
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) {
+			console.error('[bnet] syncAll failed: missing identity');
 			throw new Error('Not authenticated');
 		}
-		const characters = await ctx.runQuery(internal.charactersInternal.listAll);
-		console.log(`[bnet] syncAll — ${characters.length} character(s)`);
-		for (const character of characters) {
-			await ctx.runAction(api.characters.syncCharacter, { id: character._id });
+
+		console.log('[bnet] syncAll start', {
+			subject: identity.subject,
+			issuer: identity.issuer
+		});
+
+		try {
+			const characters = await ctx.runQuery(internal.charactersInternal.listAll);
+			console.log(`[bnet] syncAll — ${characters.length} character(s)`);
+			for (const [index, character] of characters.entries()) {
+				const characterStartedAt = Date.now();
+				const tag = `[bnet] syncAll ${index + 1}/${characters.length} ${character.nameSlug}-${character.realmSlug} (${character._id})`;
+				console.log(`${tag} dispatching`);
+				await ctx.runAction(api.characters.syncCharacter, { id: character._id });
+				console.log(`${tag} finished in ${Date.now() - characterStartedAt}ms`);
+			}
+			console.log(`[bnet] syncAll complete in ${Date.now() - startedAt}ms`);
+		} catch (error) {
+			console.error('[bnet] syncAll failed', {
+				message: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+				durationMs: Date.now() - startedAt
+			});
+			throw error;
 		}
-		console.log('[bnet] syncAll complete');
 	}
 });
