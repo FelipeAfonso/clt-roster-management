@@ -7,15 +7,38 @@
 	import { Button } from '$lib/components/ui/button';
 	import RealmCombobox from '$lib/components/RealmCombobox.svelte';
 	import { Badge } from '$lib/components/ui/badge';
+	import * as Card from '$lib/components/ui/card';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { Plus, RefreshCw, Trash2, Shield, ArrowUpDown, ArrowUp, ArrowDown } from '@lucide/svelte';
+	import * as Popover from '$lib/components/ui/popover';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import {
+		Plus,
+		RefreshCw,
+		Trash2,
+		Shield,
+		ArrowUpDown,
+		ArrowUp,
+		ArrowDown,
+		Filter,
+		X,
+		Users,
+		Swords,
+		BarChart3,
+		TrendingUp,
+		Activity
+	} from '@lucide/svelte';
 	import {
 		WOW_CLASS_COLORS_BY_ID,
+		WOW_CLASSES,
 		GEAR_SLOT_ORDER,
 		GEAR_SLOT_LABELS,
-		ROSTER_ROLES
+		ROSTER_ROLES,
+		ACTIVITY_OPTIONS,
+		ACTIVITY_LABEL_MAP
 	} from '$lib/constants';
+	import { getClassTextShadow } from '$lib/constants/wowClassColors';
+	import type { WowClass } from '$lib/constants';
 
 	const characters = useQuery(api.charactersInternal.listCharacters, {});
 	const client = useConvexClient();
@@ -23,6 +46,7 @@
 	type SortColumn =
 		| 'playerName'
 		| 'role'
+		| 'activity'
 		| 'name'
 		| 'level'
 		| 'class'
@@ -37,6 +61,56 @@
 
 	let sortColumn = $state<SortColumn | null>(null);
 	let sortDirection = $state<SortDirection>('asc');
+
+	// Filter state
+	let filterActivity = $state(new Set<string>());
+	let filterRole = $state(new Set<string>());
+	let filterClass = $state(new Set<string>());
+	let filterStatus = $state(new Set<string>());
+
+	let hasActiveFilters = $derived(
+		filterActivity.size > 0 || filterRole.size > 0 || filterClass.size > 0 || filterStatus.size > 0
+	);
+
+	function clearFilters(): void {
+		filterActivity = new Set();
+		filterRole = new Set();
+		filterClass = new Set();
+		filterStatus = new Set();
+	}
+
+	function toggleFilter(set: Set<string>, value: string): Set<string> {
+		const next = new Set(set);
+		if (next.has(value)) {
+			next.delete(value);
+		} else {
+			next.add(value);
+		}
+		return next;
+	}
+
+	let filteredCharacters = $derived.by(() => {
+		const data = characters.data;
+		if (!data) return data;
+		if (!hasActiveFilters) return data;
+
+		return data.filter((char) => {
+			if (filterActivity.size > 0) {
+				const val = char.activity ?? 'raider';
+				if (!filterActivity.has(val)) return false;
+			}
+			if (filterRole.size > 0) {
+				if (!char.role || !filterRole.has(char.role)) return false;
+			}
+			if (filterClass.size > 0) {
+				if (!char.class || !filterClass.has(char.class)) return false;
+			}
+			if (filterStatus.size > 0) {
+				if (!filterStatus.has(char.syncStatus)) return false;
+			}
+			return true;
+		});
+	});
 
 	function toggleSort(column: SortColumn): void {
 		if (sortColumn === column) {
@@ -53,7 +127,7 @@
 	}
 
 	let sortedCharacters = $derived.by(() => {
-		const data = characters.data;
+		const data = filteredCharacters;
 		if (!data || !sortColumn) return data;
 
 		const col = sortColumn;
@@ -71,6 +145,10 @@
 				case 'role':
 					av = a.role?.toLowerCase();
 					bv = b.role?.toLowerCase();
+					break;
+				case 'activity':
+					av = (a.activity ?? 'raider').toLowerCase();
+					bv = (b.activity ?? 'raider').toLowerCase();
 					break;
 				case 'name':
 					av = a.name.toLowerCase();
@@ -135,6 +213,39 @@
 	let addError = $state<string | null>(null);
 	let isAdding = $state(false);
 	let isSyncingAll = $state(false);
+	let addPopoverOpen = $state(false);
+
+	let stats = $derived.by(() => {
+		const data = filteredCharacters ?? characters.data ?? [];
+		const total = data.length;
+
+		const roleCounts = new Map<string, number>();
+		const classCounts = new Map<string, number>();
+		const classColors = new Map<string, string>();
+		const activityCounts = new Map<string, number>();
+		let ilvlSum = 0;
+		let ilvlCount = 0;
+
+		for (const char of data) {
+			if (char.role) roleCounts.set(char.role, (roleCounts.get(char.role) ?? 0) + 1);
+			if (char.class) {
+				classCounts.set(char.class, (classCounts.get(char.class) ?? 0) + 1);
+				if (char.classId != null && !classColors.has(char.class)) {
+					classColors.set(char.class, WOW_CLASS_COLORS_BY_ID[char.classId] ?? '');
+				}
+			}
+			const act = char.activity ?? 'raider';
+			activityCounts.set(act, (activityCounts.get(act) ?? 0) + 1);
+			if (char.equippedItemLevel) {
+				ilvlSum += char.equippedItemLevel;
+				ilvlCount++;
+			}
+		}
+
+		const avgIlvl = ilvlCount > 0 ? Math.round(ilvlSum / ilvlCount) : null;
+
+		return { total, roleCounts, classCounts, classColors, activityCounts, avgIlvl };
+	});
 	const syncingIds = new SvelteSet<string>();
 	let gearPanelOpen = $state(false);
 	let selectedCharacterId = $state<string | null>(null);
@@ -169,7 +280,7 @@
 
 	async function handleUpdateMeta(
 		id: Id<'characters'>,
-		fields: { playerName?: string; role?: string }
+		fields: { playerName?: string; role?: string; activity?: string }
 	): Promise<void> {
 		await client.mutation(api.charactersInternal.updateCharacterMeta, { id, ...fields });
 	}
@@ -284,40 +395,267 @@
 <div class="space-y-4">
 	<div class="flex items-center justify-between">
 		<h1 class="text-xl font-bold">Roster</h1>
-		<Button
-			variant="outline"
-			size="sm"
-			onclick={handleSyncAll}
-			disabled={isSyncingAll || !characters.data?.length}
-		>
-			<RefreshCw class="mr-2 size-4 {isSyncingAll ? 'animate-spin' : ''}" />
-			Sincronizar Todos
-		</Button>
+		<div class="flex items-center gap-2">
+			<Popover.Root bind:open={addPopoverOpen}>
+				<Popover.Trigger>
+					<Button variant="outline" size="sm">
+						<Plus class="mr-1 size-4" />
+						Adicionar
+					</Button>
+				</Popover.Trigger>
+				<Popover.Content align="end" class="w-80 p-3">
+					<div class="space-y-2">
+						<p class="text-sm font-medium">Novo Personagem</p>
+						<Input
+							placeholder="Nome do personagem"
+							bind:value={newName}
+							onkeydown={(e) => e.key === 'Enter' && handleAdd()}
+						/>
+						<RealmCombobox bind:value={newRealmSlug} onselect={(r) => (newRealmName = r.name)} />
+						<Button
+							onclick={handleAdd}
+							disabled={isAdding || !newName.trim() || !newRealmSlug}
+							size="sm"
+							class="w-full"
+						>
+							{isAdding ? 'Adicionando...' : 'Adicionar'}
+						</Button>
+						{#if addError}
+							<p class="text-sm text-destructive">{addError}</p>
+						{/if}
+					</div>
+				</Popover.Content>
+			</Popover.Root>
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={handleSyncAll}
+				disabled={isSyncingAll || !characters.data?.length}
+			>
+				<RefreshCw class="mr-2 size-4 {isSyncingAll ? 'animate-spin' : ''}" />
+				Sincronizar Todos
+			</Button>
+		</div>
 	</div>
-
-	<div class="flex gap-2">
-		<Input
-			placeholder="Nome do personagem"
-			bind:value={newName}
-			onkeydown={(e) => e.key === 'Enter' && handleAdd()}
-			class="max-w-48"
-		/>
-		<RealmCombobox bind:value={newRealmSlug} onselect={(r) => (newRealmName = r.name)} />
-		<Button onclick={handleAdd} disabled={isAdding || !newName.trim() || !newRealmSlug} size="sm">
-			<Plus class="mr-1 size-4" />
-			Adicionar
-		</Button>
-	</div>
-
-	{#if addError}
-		<p class="text-sm text-destructive">{addError}</p>
-	{/if}
 
 	{#if characters.isLoading}
 		<p class="text-sm text-muted-foreground">Carregando...</p>
 	{:else if !characters.data?.length}
-		<p class="text-sm text-muted-foreground">Nenhum personagem cadastrado. Adicione um acima.</p>
+		<p class="text-sm text-muted-foreground">Nenhum personagem cadastrado.</p>
 	{:else}
+		<div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+			<Card.Root class="border-indigo-500/30 py-3">
+				<Card.Header class="px-4 pb-1">
+					<div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-300">
+						<Users class="size-4" />
+						<Card.Title class="text-xs font-medium tracking-wide uppercase">Total</Card.Title>
+					</div>
+				</Card.Header>
+				<Card.Content class="px-4">
+					<p class="text-2xl font-bold">{stats.total}</p>
+					{#if hasActiveFilters}
+						<p class="text-xs text-muted-foreground">de {characters.data?.length ?? 0}</p>
+					{/if}
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root class="border-amber-500/30 py-3">
+				<Card.Header class="px-4 pb-1">
+					<div class="flex items-center gap-2 text-amber-600 dark:text-amber-300">
+						<Swords class="size-4" />
+						<Card.Title class="text-xs font-medium tracking-wide uppercase">Por Papel</Card.Title>
+					</div>
+				</Card.Header>
+				<Card.Content class="px-4">
+					<div class="space-y-0.5 text-sm">
+						{#each ROSTER_ROLES as role (role)}
+							{@const count = stats.roleCounts.get(role) ?? 0}
+							{#if count > 0}
+								<div class="flex justify-between">
+									<span class="truncate text-muted-foreground">{role}</span>
+									<span class="font-semibold text-amber-700 dark:text-amber-200">{count}</span>
+								</div>
+							{/if}
+						{/each}
+					</div>
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root class="border-emerald-500/30 py-3">
+				<Card.Header class="px-4 pb-1">
+					<div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
+						<BarChart3 class="size-4" />
+						<Card.Title class="text-xs font-medium tracking-wide uppercase">Por Classe</Card.Title>
+					</div>
+				</Card.Header>
+				<Card.Content class="px-4">
+					<div class="space-y-0.5 text-sm">
+						{#each [...stats.classCounts.entries()]
+							.sort((a, b) => b[1] - a[1])
+							.slice(0, 5) as [cls, count] (cls)}
+							{@const color = stats.classColors.get(cls)}
+							{@const shadow = getClassTextShadow(cls as WowClass)}
+							<div class="flex justify-between">
+								<span
+									class="truncate font-medium"
+									style="color: {color ?? 'inherit'}; text-shadow: {shadow};">{cls}</span
+								>
+								<span
+									class="font-semibold"
+									style="color: {color ?? 'inherit'}; text-shadow: {shadow};">{count}</span
+								>
+							</div>
+						{/each}
+					</div>
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root class="border-sky-500/30 py-3">
+				<Card.Header class="px-4 pb-1">
+					<div class="flex items-center gap-2 text-sky-600 dark:text-sky-300">
+						<TrendingUp class="size-4" />
+						<Card.Title class="text-xs font-medium tracking-wide uppercase">Ilvl Médio</Card.Title>
+					</div>
+				</Card.Header>
+				<Card.Content class="px-4">
+					<p class="font-mono text-2xl font-bold text-sky-700 dark:text-sky-200">
+						{stats.avgIlvl ?? '—'}
+					</p>
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root class="border-violet-500/30 py-3">
+				<Card.Header class="px-4 pb-1">
+					<div class="flex items-center gap-2 text-violet-600 dark:text-violet-300">
+						<Activity class="size-4" />
+						<Card.Title class="text-xs font-medium tracking-wide uppercase">Atividade</Card.Title>
+					</div>
+				</Card.Header>
+				<Card.Content class="px-4">
+					<div class="space-y-0.5 text-sm">
+						{#each ACTIVITY_OPTIONS as opt (opt.value)}
+							{@const count = stats.activityCounts.get(opt.value) ?? 0}
+							{#if count > 0}
+								<div class="flex justify-between">
+									<span class="truncate text-muted-foreground">{opt.label}</span>
+									<span class="font-semibold text-violet-700 dark:text-violet-200">{count}</span>
+								</div>
+							{/if}
+						{/each}
+					</div>
+				</Card.Content>
+			</Card.Root>
+		</div>
+		<div class="flex flex-wrap items-center gap-2">
+			<Filter class="size-4 text-muted-foreground" />
+
+			<Popover.Root>
+				<Popover.Trigger>
+					<Button
+						variant="outline"
+						size="sm"
+						class={filterActivity.size > 0 ? 'border-primary' : ''}
+					>
+						Atividade{filterActivity.size > 0 ? ` (${filterActivity.size})` : ''}
+					</Button>
+				</Popover.Trigger>
+				<Popover.Content align="start" class="w-48 p-2">
+					<div class="space-y-1">
+						{#each ACTIVITY_OPTIONS as opt (opt.value)}
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted"
+							>
+								<Checkbox
+									checked={filterActivity.has(opt.value)}
+									onCheckedChange={() => (filterActivity = toggleFilter(filterActivity, opt.value))}
+								/>
+								<span class="text-sm">{opt.label}</span>
+							</label>
+						{/each}
+					</div>
+				</Popover.Content>
+			</Popover.Root>
+
+			<Popover.Root>
+				<Popover.Trigger>
+					<Button variant="outline" size="sm" class={filterRole.size > 0 ? 'border-primary' : ''}>
+						Papel{filterRole.size > 0 ? ` (${filterRole.size})` : ''}
+					</Button>
+				</Popover.Trigger>
+				<Popover.Content align="start" class="w-48 p-2">
+					<div class="space-y-1">
+						{#each ROSTER_ROLES as role (role)}
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted"
+							>
+								<Checkbox
+									checked={filterRole.has(role)}
+									onCheckedChange={() => (filterRole = toggleFilter(filterRole, role))}
+								/>
+								<span class="text-sm">{role}</span>
+							</label>
+						{/each}
+					</div>
+				</Popover.Content>
+			</Popover.Root>
+
+			<Popover.Root>
+				<Popover.Trigger>
+					<Button variant="outline" size="sm" class={filterClass.size > 0 ? 'border-primary' : ''}>
+						Classe{filterClass.size > 0 ? ` (${filterClass.size})` : ''}
+					</Button>
+				</Popover.Trigger>
+				<Popover.Content align="start" class="w-56 p-2">
+					<div class="grid grid-cols-1 gap-1">
+						{#each WOW_CLASSES as cls (cls)}
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted"
+							>
+								<Checkbox
+									checked={filterClass.has(cls)}
+									onCheckedChange={() => (filterClass = toggleFilter(filterClass, cls))}
+								/>
+								<span class="text-sm">{cls}</span>
+							</label>
+						{/each}
+					</div>
+				</Popover.Content>
+			</Popover.Root>
+
+			<Popover.Root>
+				<Popover.Trigger>
+					<Button variant="outline" size="sm" class={filterStatus.size > 0 ? 'border-primary' : ''}>
+						Status{filterStatus.size > 0 ? ` (${filterStatus.size})` : ''}
+					</Button>
+				</Popover.Trigger>
+				<Popover.Content align="start" class="w-48 p-2">
+					<div class="space-y-1">
+						{#each [{ value: 'pending', label: 'Pendente' }, { value: 'synced', label: 'Sincronizado' }, { value: 'error', label: 'Erro' }, { value: 'syncing', label: 'Sincronizando' }] as opt (opt.value)}
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-muted"
+							>
+								<Checkbox
+									checked={filterStatus.has(opt.value)}
+									onCheckedChange={() => (filterStatus = toggleFilter(filterStatus, opt.value))}
+								/>
+								<span class="text-sm">{opt.label}</span>
+							</label>
+						{/each}
+					</div>
+				</Popover.Content>
+			</Popover.Root>
+
+			{#if hasActiveFilters}
+				<button
+					class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+					onclick={clearFilters}
+				>
+					<X class="size-3.5" />
+					Limpar filtros
+				</button>
+			{/if}
+		</div>
+
 		<div class="overflow-x-auto rounded-md border">
 			<table class="w-full text-sm">
 				<thead>
@@ -346,6 +684,21 @@
 								{#if sortColumn === 'role' && sortDirection === 'asc'}
 									<ArrowUp class="size-3.5 text-muted-foreground" />
 								{:else if sortColumn === 'role' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-left font-medium">
+							<button
+								class="inline-flex items-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('activity')}
+							>
+								Atividade
+								{#if sortColumn === 'activity' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'activity' && sortDirection === 'desc'}
 									<ArrowDown class="size-3.5 text-muted-foreground" />
 								{:else}
 									<ArrowUpDown class="size-3.5 text-muted-foreground" />
@@ -540,6 +893,20 @@
 									{/each}
 								</select>
 							</td>
+							<td class="px-3 py-1">
+								<select
+									class="w-32 rounded border border-input bg-background px-1.5 py-0.5 text-sm text-foreground focus:ring-1 focus:ring-ring focus:outline-none"
+									value={char.activity ?? 'raider'}
+									onchange={(e) => {
+										const val = (e.currentTarget as HTMLSelectElement).value;
+										handleUpdateMeta(char._id, { activity: val || undefined });
+									}}
+								>
+									{#each ACTIVITY_OPTIONS as opt (opt.value)}
+										<option value={opt.value}>{opt.label}</option>
+									{/each}
+								</select>
+							</td>
 							<td class="px-3 py-2">
 								<span class="font-medium">{char.name}</span><span class="text-muted-foreground"
 									>-{char.realm}</span
@@ -548,7 +915,12 @@
 							<td class="px-3 py-2 text-right">{char.level ?? '—'}</td>
 							<td class="px-3 py-2">
 								{#if char.class}
-									<span style="color: {classColor ?? 'inherit'}; font-weight: 500;">
+									<span
+										style="color: {classColor ??
+											'inherit'}; font-weight: 500; text-shadow: {getClassTextShadow(
+											char.class as WowClass
+										)};"
+									>
 										{char.class}
 									</span>
 								{:else}

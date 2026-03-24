@@ -38,10 +38,7 @@
 	</div>
 {:else}
 	<Sidebar.Provider>
-		<Sidebar.Root>
-			<Sidebar.Header class="p-4">
-				<span class="text-sm font-bold">CLT Roster</span>
-			</Sidebar.Header>
+		<Sidebar.Root collapsible="icon">
 			<Sidebar.Content>
 				<Sidebar.Group>
 					<Sidebar.GroupLabel>Navega&ccedil;&atilde;o</Sidebar.GroupLabel>
@@ -117,7 +114,7 @@
 						''}
 				</h1>
 			</header>
-			<main class="flex-1 overflow-auto p-4">
+			<main class="min-w-0 flex-1 overflow-auto p-4">
 				{@render children()}
 			</main>
 		</Sidebar.Inset>

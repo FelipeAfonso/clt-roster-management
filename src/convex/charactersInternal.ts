@@ -48,7 +48,8 @@ export const updateCharacterMeta = mutation({
 	args: {
 		id: v.id('characters'),
 		playerName: v.optional(v.string()),
-		role: v.optional(v.string())
+		role: v.optional(v.string()),
+		activity: v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();

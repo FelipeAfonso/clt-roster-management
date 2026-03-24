@@ -10,6 +10,14 @@
 
 import type * as characters from "../characters.js";
 import type * as charactersInternal from "../charactersInternal.js";
+import type * as crons from "../crons.js";
+import type * as discord_channelPoller from "../discord/channelPoller.js";
+import type * as discord_channelPollerQueries from "../discord/channelPollerQueries.js";
+import type * as discord_commands from "../discord/commands.js";
+import type * as discord_http from "../discord/http.js";
+import type * as discord_messages from "../discord/messages.js";
+import type * as discord_types from "../discord/types.js";
+import type * as http from "../http.js";
 import type * as pollResponses from "../pollResponses.js";
 
 import type {
@@ -21,6 +29,14 @@ import type {
 declare const fullApi: ApiFromModules<{
   characters: typeof characters;
   charactersInternal: typeof charactersInternal;
+  crons: typeof crons;
+  "discord/channelPoller": typeof discord_channelPoller;
+  "discord/channelPollerQueries": typeof discord_channelPollerQueries;
+  "discord/commands": typeof discord_commands;
+  "discord/http": typeof discord_http;
+  "discord/messages": typeof discord_messages;
+  "discord/types": typeof discord_types;
+  http: typeof http;
   pollResponses: typeof pollResponses;
 }>;
 

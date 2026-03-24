@@ -75,6 +75,22 @@ export const ROSTER_ROLES = [
 
 export type RosterRole = (typeof ROSTER_ROLES)[number];
 
+export const ACTIVITY_OPTIONS = [
+	{ value: 'raider', label: 'Raider' },
+	{ value: 'monday_only', label: 'Só Segunda' },
+	{ value: 'thursday_only', label: 'Só Quinta' },
+	{ value: 'mythic_plus_pusher', label: 'M+ Pusher' },
+	{ value: 'sometimes', label: 'Às Vezes' },
+	{ value: 'inactive', label: 'Inativo' },
+	{ value: 'full', label: 'Full' }
+] as const;
+
+export type Activity = (typeof ACTIVITY_OPTIONS)[number]['value'];
+
+export const ACTIVITY_LABEL_MAP: Record<string, string> = Object.fromEntries(
+	ACTIVITY_OPTIONS.map((o) => [o.value, o.label])
+);
+
 export const WOW_CLASS_COLORS_BY_ID: Record<number, string> = {
 	1: '#C69B3A',
 	2: '#F58CBA',

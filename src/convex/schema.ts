@@ -46,6 +46,23 @@ export default defineSchema({
 					)
 				})
 			)
-		)
-	}).index('by_nameSlug_realmSlug', ['nameSlug', 'realmSlug'])
+		),
+		activity: v.optional(v.string())
+	}).index('by_nameSlug_realmSlug', ['nameSlug', 'realmSlug']),
+
+	discordChannelState: defineTable({
+		channelId: v.string(),
+		channelName: v.string(),
+		lastMessageId: v.optional(v.string()),
+		lastPolledAt: v.optional(v.number()),
+		enabled: v.boolean()
+	}).index('by_channelId', ['channelId']),
+
+	discordUserMappings: defineTable({
+		discordUserId: v.string(),
+		discordUsername: v.string(),
+		playerName: v.optional(v.string())
+	})
+		.index('by_discordUserId', ['discordUserId'])
+		.index('by_playerName', ['playerName'])
 });

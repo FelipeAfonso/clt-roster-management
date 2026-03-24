@@ -46,8 +46,11 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
+		"@discordjs/rest": "^2.6.0",
 		"@workos-inc/authkit-js": "^0.19.0",
 		"convex": "^1.31.7",
-		"convex-svelte": "^0.0.12"
+		"convex-svelte": "^0.0.12",
+		"discord-api-types": "^0.38.42",
+		"discord-interactions": "^4.4.0"
 	}
 }
