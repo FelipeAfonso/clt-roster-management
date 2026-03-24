@@ -392,7 +392,7 @@
 	<title>Roster | Cartel Lucros Taxados</title>
 </svelte:head>
 
-<div class="space-y-4">
+<div class="min-w-0 space-y-4">
 	<div class="flex items-center justify-between">
 		<h1 class="text-xl font-bold">Roster</h1>
 		<div class="flex items-center gap-2">
