@@ -93,6 +93,7 @@ export const syncCharacter = action({
 					quality?: { type?: string };
 					enchantments?: Array<{ display_string?: string }>;
 					sockets?: Array<{ socket_type?: { type?: string }; item?: { name?: string } }>;
+					set?: { item_set?: { id?: number; name?: string } };
 				}>;
 			};
 			const equippedItems = (equipment.equipped_items ?? []).map((item) => ({
@@ -107,7 +108,9 @@ export const syncCharacter = action({
 					type: s.socket_type?.type ?? 'PRISMATIC',
 					filled: !!s.item,
 					gemName: s.item?.name
-				}))
+				})),
+				setId: item.set?.item_set?.id,
+				setName: item.set?.item_set?.name
 			}));
 			console.log(`${tag} equipment ok — ${equippedItems.length} slots`);
 
