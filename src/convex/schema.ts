@@ -43,7 +43,9 @@ export default defineSchema({
 						v.array(
 							v.object({ type: v.string(), filled: v.boolean(), gemName: v.optional(v.string()) })
 						)
-					)
+					),
+					setId: v.optional(v.number()),
+					setName: v.optional(v.string())
 				})
 			)
 		),

@@ -53,6 +53,7 @@
 		| 'spec'
 		| 'averageItemLevel'
 		| 'equippedItemLevel'
+		| 'tierPieces'
 		| 'enchants'
 		| 'gems'
 		| 'lastSyncedAt'
@@ -174,6 +175,11 @@
 					av = a.equippedItemLevel ?? undefined;
 					bv = b.equippedItemLevel ?? undefined;
 					break;
+				case 'tierPieces': {
+					av = tierPieceCount(a.equippedItems);
+					bv = tierPieceCount(b.equippedItems);
+					break;
+				}
 				case 'enchants': {
 					const ea = enchantScore(a.equippedItems);
 					const eb = enchantScore(b.equippedItems);
@@ -326,6 +332,8 @@
 		itemLevel: number;
 		enchantments?: { displayString: string }[];
 		sockets?: { type: string; filled: boolean; gemName?: string }[];
+		setId?: number;
+		setName?: string;
 	};
 
 	function enchantScore(items: EquippedItem[] | undefined): {
@@ -375,6 +383,17 @@
 		if (count === total) return 'text-green-500';
 		if (count <= 2) return 'text-red-500';
 		return 'text-yellow-500';
+	}
+
+	function tierPieceCount(items: EquippedItem[] | undefined): number {
+		if (!items) return 0;
+		return items.filter((i) => i.setId != null).length;
+	}
+
+	function tierPieceColorClass(count: number): string {
+		if (count >= 4) return 'text-green-500';
+		if (count >= 2) return 'text-yellow-500';
+		return 'text-red-500';
 	}
 
 	function formatDate(ts: number | undefined): string {
@@ -798,6 +817,21 @@
 						<th class="px-3 py-2 text-center font-medium">
 							<button
 								class="inline-flex w-full items-center justify-center gap-1 hover:text-foreground"
+								onclick={() => toggleSort('tierPieces')}
+							>
+								Tier
+								{#if sortColumn === 'tierPieces' && sortDirection === 'asc'}
+									<ArrowUp class="size-3.5 text-muted-foreground" />
+								{:else if sortColumn === 'tierPieces' && sortDirection === 'desc'}
+									<ArrowDown class="size-3.5 text-muted-foreground" />
+								{:else}
+									<ArrowUpDown class="size-3.5 text-muted-foreground" />
+								{/if}
+							</button>
+						</th>
+						<th class="px-3 py-2 text-center font-medium">
+							<button
+								class="inline-flex w-full items-center justify-center gap-1 hover:text-foreground"
 								onclick={() => toggleSort('enchants')}
 							>
 								Encantos
@@ -930,6 +964,16 @@
 							<td class="px-3 py-2">{char.spec ?? '—'}</td>
 							<td class="px-3 py-2 text-right font-mono">{char.averageItemLevel ?? '—'}</td>
 							<td class="px-3 py-2 text-right font-mono">{char.equippedItemLevel ?? '—'}</td>
+							<td class="px-3 py-2 text-center">
+								{#if char.equippedItems}
+									{@const tierCount = tierPieceCount(char.equippedItems)}
+									<span class="font-mono font-semibold {tierPieceColorClass(tierCount)}">
+										{tierCount}/5
+									</span>
+								{:else}
+									<span class="text-muted-foreground">—</span>
+								{/if}
+							</td>
 							<td class="px-3 py-2 text-center">
 								{#if char.equippedItems}
 									{@const score = enchantScore(char.equippedItems)}
