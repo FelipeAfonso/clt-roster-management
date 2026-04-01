@@ -387,7 +387,13 @@
 
 	function tierPieceCount(items: EquippedItem[] | undefined): number {
 		if (!items) return 0;
-		return items.filter((i) => i.setId != null).length;
+		const countsBySet = new Map<number, number>();
+		for (const item of items) {
+			if (item.setId != null) {
+				countsBySet.set(item.setId, (countsBySet.get(item.setId) ?? 0) + 1);
+			}
+		}
+		return Math.max(0, ...countsBySet.values());
 	}
 
 	function tierPieceColorClass(count: number): string {
@@ -1137,20 +1143,55 @@
 		</Sheet.Header>
 
 		{#if selectedCharacter?.equippedItems?.length}
+			{@const setMap = (() => {
+				const map = new Map<number, { name: string; count: number; total: number }>();
+				for (const item of selectedCharacter.equippedItems ?? []) {
+					if (item.setId != null && item.setName) {
+						const entry = map.get(item.setId);
+						if (entry) {
+							entry.count++;
+						} else {
+							map.set(item.setId, { name: item.setName, count: 1, total: 5 });
+						}
+					}
+				}
+				return map;
+			})()}
+			{#if setMap.size > 0}
+				<div class="mt-4 space-y-2 px-4">
+					{#each [...setMap.entries()] as [setId, setInfo] (setId)}
+						{@const colorClass = tierPieceColorClass(setInfo.count)}
+						<div class="rounded-md border border-purple-500/30 bg-purple-500/5 p-3">
+							<div class="flex items-center justify-between">
+								<p class="text-sm font-semibold text-purple-300">{setInfo.name}</p>
+								<span class="font-mono text-sm font-bold {colorClass}">{setInfo.count}/{setInfo.total}</span>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
 			<div class="mt-4 space-y-2 overflow-y-auto px-4 pb-4">
 				{#each GEAR_SLOT_ORDER as slotKey (slotKey)}
 					{@const item = selectedCharacter.equippedItems?.find((i) => i.slot === slotKey)}
 					{@const needsEnchant = ENCHANTABLE_SLOTS.includes(slotKey)}
 					{@const missingEnchant = needsEnchant && !!item && !item.enchantments?.length}
 					{@const hasEmptySocket = !!item?.sockets?.some((s) => !s.filled)}
+					{@const isTierPiece = !!item?.setId}
 					<div
 						class="rounded-md border p-2 {missingEnchant || hasEmptySocket
 							? 'border-yellow-500/50 bg-yellow-500/5'
-							: ''}"
+							: isTierPiece
+								? 'border-purple-500/30 bg-purple-500/5'
+								: ''}"
 					>
 						<div class="flex items-baseline justify-between gap-2">
 							<div class="min-w-0 flex-1">
-								<p class="text-xs text-muted-foreground">{GEAR_SLOT_LABELS[slotKey] ?? slotKey}</p>
+								<p class="text-xs text-muted-foreground">
+									{GEAR_SLOT_LABELS[slotKey] ?? slotKey}
+									{#if isTierPiece}
+										<span class="ml-1 text-purple-400">● Tier</span>
+									{/if}
+								</p>
 								{#if item}
 									<p class="truncate text-sm font-medium">{item.name}</p>
 									{#if item.enchantments?.length}
