@@ -91,6 +91,7 @@ export const syncCharacter = action({
 					name?: string;
 					level?: { value?: number };
 					quality?: { type?: string };
+					inventory_type?: { type?: string };
 					enchantments?: Array<{ display_string?: string }>;
 					sockets?: Array<{ socket_type?: { type?: string }; item?: { name?: string } }>;
 					set?: { item_set?: { id?: number; name?: string } };
@@ -101,6 +102,7 @@ export const syncCharacter = action({
 				name: item.name ?? '',
 				itemLevel: item.level?.value ?? 0,
 				quality: item.quality?.type,
+				inventoryType: item.inventory_type?.type,
 				enchantments: (item.enchantments ?? []).map((e) => ({
 					displayString: e.display_string ?? ''
 				})),
