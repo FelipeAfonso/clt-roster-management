@@ -330,11 +330,15 @@
 		slot: string;
 		name: string;
 		itemLevel: number;
+		inventoryType?: string;
 		enchantments?: { displayString: string }[];
 		sockets?: { type: string; filled: boolean; gemName?: string }[];
 		setId?: number;
 		setName?: string;
 	};
+
+	/** Off-hand inventory types that cannot be enchanted (shields, caster off-hands). */
+	const NON_ENCHANTABLE_OFFHAND_TYPES = ['SHIELD', 'HOLDABLE'];
 
 	function enchantScore(items: EquippedItem[] | undefined): {
 		count: number;
@@ -344,7 +348,13 @@
 		if (!items) return { count: 0, total: 0, missing: [] };
 		let count = 0;
 		const missing: string[] = [];
-		const applicable = ENCHANTABLE_SLOTS.filter((s) => items.some((i) => i.slot === s));
+		const applicable = ENCHANTABLE_SLOTS.filter((s) => {
+			const item = items.find((i) => i.slot === s);
+			if (!item) return false;
+			if (s === 'OFF_HAND' && NON_ENCHANTABLE_OFFHAND_TYPES.includes(item.inventoryType ?? ''))
+				return false;
+			return true;
+		});
 		for (const slot of applicable) {
 			const item = items.find((i) => i.slot === slot);
 			if (item?.enchantments?.length) {
@@ -1173,7 +1183,7 @@
 			<div class="mt-4 space-y-2 overflow-y-auto px-4 pb-4">
 				{#each GEAR_SLOT_ORDER as slotKey (slotKey)}
 					{@const item = selectedCharacter.equippedItems?.find((i) => i.slot === slotKey)}
-					{@const needsEnchant = ENCHANTABLE_SLOTS.includes(slotKey)}
+					{@const needsEnchant = ENCHANTABLE_SLOTS.includes(slotKey) && !(slotKey === 'OFF_HAND' && NON_ENCHANTABLE_OFFHAND_TYPES.includes(item?.inventoryType ?? ''))}
 					{@const missingEnchant = needsEnchant && !!item && !item.enchantments?.length}
 					{@const hasEmptySocket = !!item?.sockets?.some((s) => !s.filled)}
 					{@const isTierPiece = !!item?.setId}

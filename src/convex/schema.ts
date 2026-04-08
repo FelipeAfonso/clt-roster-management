@@ -38,6 +38,7 @@ export default defineSchema({
 					name: v.string(),
 					itemLevel: v.number(),
 					quality: v.optional(v.string()),
+					inventoryType: v.optional(v.string()),
 					enchantments: v.optional(v.array(v.object({ displayString: v.string() }))),
 					sockets: v.optional(
 						v.array(
