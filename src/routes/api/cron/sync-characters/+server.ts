@@ -15,6 +15,7 @@ export const GET: RequestHandler = async ({ request }) => {
 	const logPrefix = `[cron:sync-characters:${requestId}]`;
 	const cronSecret = env.CRON_SECRET;
 	const deployKey = env.CONVEX_DEPLOY_KEY;
+	const vercelEnv = env.VERCEL_ENV ?? process.env.VERCEL_ENV;
 	const authorization = request.headers.get('authorization');
 	const vercelRequestId = request.headers.get('x-vercel-id');
 	const userAgent = request.headers.get('user-agent');
@@ -23,8 +24,19 @@ export const GET: RequestHandler = async ({ request }) => {
 		method: request.method,
 		url: request.url,
 		userAgent,
-		vercelRequestId
+		vercelRequestId,
+		vercelEnv
 	});
+
+	if (vercelEnv && vercelEnv !== 'production') {
+		console.info(`${logPrefix} skipping sync outside production`, { vercelEnv });
+		return json({
+			ok: true,
+			skipped: true,
+			reason: `auto sync is production-only (current env: ${vercelEnv})`,
+			requestId
+		});
+	}
 
 	console.info(`${logPrefix} configuration snapshot`, {
 		hasCronSecret: !!cronSecret,
