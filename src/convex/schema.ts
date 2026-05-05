@@ -67,5 +67,65 @@ export default defineSchema({
 		playerName: v.optional(v.string())
 	})
 		.index('by_discordUserId', ['discordUserId'])
-		.index('by_playerName', ['playerName'])
+		.index('by_playerName', ['playerName']),
+
+	guildApplications: defineTable({
+		// Identidade pessoal
+		displayName: v.string(),
+		discord: v.string(),
+		battleTag: v.optional(v.string()),
+
+		// Triagem
+		intent: v.union(
+			v.literal('community_only'),
+			v.literal('dungeons_only'),
+			v.literal('raids_only'),
+			v.literal('raids_and_dungeons')
+		),
+
+		// Personagens (vazio se intent === 'community_only')
+		characters: v.array(
+			v.object({
+				name: v.string(),
+				realm: v.string(),
+				realmDisplay: v.string(),
+				class: v.string(),
+				specs: v.array(v.string()),
+				notes: v.optional(v.string())
+			})
+		),
+
+		// Histórico competitivo (todos opcionais)
+		warcraftLogsUrl: v.optional(v.string()),
+		raiderIoUrl: v.optional(v.string()),
+		previousGuilds: v.optional(v.string()),
+
+		// Narrativa
+		motivation: v.string(),
+		experience: v.optional(v.string()),
+		expectations: v.string(),
+		additionalNotes: v.optional(v.string()),
+
+		// Lifecycle
+		status: v.union(
+			v.literal('pending'),
+			v.literal('reviewing'),
+			v.literal('approved'),
+			v.literal('rejected')
+		),
+		reviewerNotes: v.optional(
+			v.array(
+				v.object({
+					note: v.string(),
+					authorEmail: v.string(),
+					createdAt: v.number()
+				})
+			)
+		),
+		reviewedBy: v.optional(v.string()),
+		reviewedAt: v.optional(v.number())
+	})
+		.index('by_status', ['status'])
+		.index('by_discord', ['discord'])
+		.index('by_intent', ['intent'])
 });

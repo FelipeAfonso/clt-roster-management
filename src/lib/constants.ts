@@ -16,6 +16,28 @@ export const WOW_CLASSES = [
 
 export type WowClass = (typeof WOW_CLASSES)[number];
 
+// Specs por classe (chaves em pt-BR para casar com WOW_CLASSES; valores em ingl\u00eas
+// por conven\u00e7\u00e3o usada na comunidade brasileira de WoW).
+export const WOW_SPECS_BY_CLASS: Record<WowClass, readonly string[]> = {
+	'Cavaleiro da Morte': ['Blood', 'Frost', 'Unholy'],
+	'Ca\u00e7ador de Dem\u00f4nios': ['Havoc', 'Vengeance', 'Devourer'],
+	Druida: ['Balance', 'Feral', 'Guardian', 'Restoration'],
+	Conjurante: ['Devastation', 'Preservation', 'Augmentation'],
+	'Ca\u00e7ador': ['Beast Mastery', 'Marksmanship', 'Survival'],
+	Mago: ['Arcane', 'Fire', 'Frost'],
+	Monge: ['Brewmaster', 'Mistweaver', 'Windwalker'],
+	Paladino: ['Holy', 'Protection', 'Retribution'],
+	Sacerdote: ['Discipline', 'Holy', 'Shadow'],
+	Ladino: ['Assassination', 'Outlaw', 'Subtlety'],
+	'Xam\u00e3': ['Elemental', 'Enhancement', 'Restoration'],
+	Bruxo: ['Affliction', 'Demonology', 'Destruction'],
+	Guerreiro: ['Arms', 'Fury', 'Protection']
+};
+
+export function specsForClass(cls: string): readonly string[] {
+	return WOW_SPECS_BY_CLASS[cls as WowClass] ?? [];
+}
+
 export const ROLES = ['Tank', 'Healer', 'DPS a Dist\u00e2ncia', 'DPS Corpo a Corpo'] as const;
 
 export type Role = (typeof ROLES)[number];

@@ -1174,7 +1174,9 @@
 						<div class="rounded-md border border-purple-500/30 bg-purple-500/5 p-3">
 							<div class="flex items-center justify-between">
 								<p class="text-sm font-semibold text-purple-300">{setInfo.name}</p>
-								<span class="font-mono text-sm font-bold {colorClass}">{setInfo.count}/{setInfo.total}</span>
+								<span class="font-mono text-sm font-bold {colorClass}"
+									>{setInfo.count}/{setInfo.total}</span
+								>
 							</div>
 						</div>
 					{/each}
@@ -1183,7 +1185,12 @@
 			<div class="mt-4 space-y-2 overflow-y-auto px-4 pb-4">
 				{#each GEAR_SLOT_ORDER as slotKey (slotKey)}
 					{@const item = selectedCharacter.equippedItems?.find((i) => i.slot === slotKey)}
-					{@const needsEnchant = ENCHANTABLE_SLOTS.includes(slotKey) && !(slotKey === 'OFF_HAND' && NON_ENCHANTABLE_OFFHAND_TYPES.includes(item?.inventoryType ?? ''))}
+					{@const needsEnchant =
+						ENCHANTABLE_SLOTS.includes(slotKey) &&
+						!(
+							slotKey === 'OFF_HAND' &&
+							NON_ENCHANTABLE_OFFHAND_TYPES.includes(item?.inventoryType ?? '')
+						)}
 					{@const missingEnchant = needsEnchant && !!item && !item.enchantments?.length}
 					{@const hasEmptySocket = !!item?.sockets?.some((s) => !s.filled)}
 					{@const isTierPiece = !!item?.setId}

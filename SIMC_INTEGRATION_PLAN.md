@@ -55,6 +55,7 @@ clt-simc-service/
 ### `Dockerfile`
 
 Multi-stage build:
+
 1. **Stage 1 (build)**: Ubuntu 24.04, download SimC nightly Linux release from GitHub
 2. **Stage 2 (runtime)**: `node:22-slim`, copy SimC binary from stage 1, install app deps, run server
 
@@ -103,12 +104,14 @@ primary_region = "gru"
 Two endpoints:
 
 **`POST /sim`**
+
 - Validates `Authorization: Bearer <SIMC_API_TOKEN>`
 - Accepts body: `{ jobId, region, realm, name, simType, callbackUrl, callbackToken }`
 - `simType`: `"quick_dps" | "stat_weights" | "multi_target"`
 - Enqueues the job, returns `202 Accepted` with `{ jobId, position }`
 
 **`GET /health`**
+
 - Returns `200` with `{ status: "ok", queueLength, running }`
 
 ### `src/queue.ts` — Job Queue
@@ -122,24 +125,25 @@ Two endpoints:
 ### `src/simc.ts` — SimC Runner + Parser
 
 **Spawning SimC:**
+
 ```typescript
 // Build args based on simType
 function buildSimcArgs(job: JobPayload): string[] {
-  const base = [
-    `armory=${job.region},${job.realm},${job.name}`,
-    'iterations=10000',
-    'target_error=0.5',
-    'threads=2',
-    'json2=/dev/stdout',  // JSON output to stdout
-  ];
+	const base = [
+		`armory=${job.region},${job.realm},${job.name}`,
+		'iterations=10000',
+		'target_error=0.5',
+		'threads=2',
+		'json2=/dev/stdout' // JSON output to stdout
+	];
 
-  if (job.simType === 'stat_weights') {
-    base.push('calculate_scale_factors=1', 'normalize_scale_factors=1');
-  }
-  if (job.simType === 'multi_target') {
-    base.push('desired_targets=5', 'fight_style=DungeonSlice');
-  }
-  return base;
+	if (job.simType === 'stat_weights') {
+		base.push('calculate_scale_factors=1', 'normalize_scale_factors=1');
+	}
+	if (job.simType === 'multi_target') {
+		base.push('desired_targets=5', 'fight_style=DungeonSlice');
+	}
+	return base;
 }
 ```
 
@@ -147,6 +151,7 @@ Use `child_process.spawn('simc', args)` with a timeout of 120 seconds.
 
 **Parsing output:**
 Use SimC's `json2` output mode which produces structured JSON. Parse the JSON to extract:
+
 - `sim.players[0].collected_data.dps` → mean, min, max
 - `sim.players[0].scale_factors` → stat weights (when applicable)
 - `sim.statistics.elapsed_time_seconds`
@@ -158,18 +163,28 @@ After SimC completes (or errors), POST to the Convex webhook:
 
 ```typescript
 await fetch(job.callbackUrl, {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${job.callbackToken}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    jobId: job.jobId,
-    status: 'completed', // or 'error'
-    result: { dps, dpsMin, dpsMax, dpsError, statWeights, targetCount, simcVersion, iterations, fightLength },
-    rawOutput: truncatedOutput, // first 50KB of raw text
-    error: errorMessage, // only on failure
-  }),
+	method: 'POST',
+	headers: {
+		Authorization: `Bearer ${job.callbackToken}`,
+		'Content-Type': 'application/json'
+	},
+	body: JSON.stringify({
+		jobId: job.jobId,
+		status: 'completed', // or 'error'
+		result: {
+			dps,
+			dpsMin,
+			dpsMax,
+			dpsError,
+			statWeights,
+			targetCount,
+			simcVersion,
+			iterations,
+			fightLength
+		},
+		rawOutput: truncatedOutput, // first 50KB of raw text
+		error: errorMessage // only on failure
+	})
 });
 ```
 
@@ -185,25 +200,25 @@ Simple bearer token check against `SIMC_API_TOKEN` env var. Returns 401 on misma
 export type SimType = 'quick_dps' | 'stat_weights' | 'multi_target';
 
 export interface JobPayload {
-  jobId: string;
-  region: string;
-  realm: string;
-  name: string;
-  simType: SimType;
-  callbackUrl: string;
-  callbackToken: string;
+	jobId: string;
+	region: string;
+	realm: string;
+	name: string;
+	simType: SimType;
+	callbackUrl: string;
+	callbackToken: string;
 }
 
 export interface SimResult {
-  dps: number;
-  dpsMin?: number;
-  dpsMax?: number;
-  dpsError?: number;
-  statWeights?: Record<string, number>;
-  targetCount?: number;
-  simcVersion?: string;
-  iterations?: number;
-  fightLength?: number;
+	dps: number;
+	dpsMin?: number;
+	dpsMax?: number;
+	dpsError?: number;
+	statWeights?: Record<string, number>;
+	targetCount?: number;
+	simcVersion?: string;
+	iterations?: number;
+	fightLength?: number;
 }
 ```
 
@@ -211,11 +226,11 @@ export interface SimResult {
 
 ## Environment Variables (Fly.io secrets)
 
-| Variable | Description |
-|----------|-------------|
-| `SIMC_API_TOKEN` | Shared secret — validates inbound requests from Convex |
-| `BATTLE_NET_CLIENT_ID` | For SimC armory import (can reuse existing app registration) |
-| `BATTLE_NET_CLIENT_SECRET` | For SimC armory import |
+| Variable                   | Description                                                  |
+| -------------------------- | ------------------------------------------------------------ |
+| `SIMC_API_TOKEN`           | Shared secret — validates inbound requests from Convex       |
+| `BATTLE_NET_CLIENT_ID`     | For SimC armory import (can reuse existing app registration) |
+| `BATTLE_NET_CLIENT_SECRET` | For SimC armory import                                       |
 
 Note: `callbackToken` is sent per-request from Convex, not stored as an env var here.
 
@@ -254,6 +269,7 @@ curl -X POST https://clt-simc-service.fly.dev/sim \
 ## SimC Binary Updates
 
 When a new WoW patch drops:
+
 1. Check SimC GitHub releases for a new nightly/release
 2. Update `SIMC_VERSION` build arg in Dockerfile (or use `nightly` to always pull latest)
 3. `fly deploy` — rebuilds image with new binary

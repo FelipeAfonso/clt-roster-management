@@ -19,6 +19,7 @@ import type * as discord_messages from "../discord/messages.js";
 import type * as discord_types from "../discord/types.js";
 import type * as http from "../http.js";
 import type * as pollResponses from "../pollResponses.js";
+import type * as recruitment from "../recruitment.js";
 
 import type {
   ApiFromModules,
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   "discord/types": typeof discord_types;
   http: typeof http;
   pollResponses: typeof pollResponses;
+  recruitment: typeof recruitment;
 }>;
 
 /**
