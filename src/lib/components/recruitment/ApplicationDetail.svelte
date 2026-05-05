@@ -5,6 +5,7 @@
 	import {
 		INTENT_LABELS,
 		INTENT_VARIANTS,
+		intentInvolvesDungeons,
 		intentInvolvesRaids,
 		intentRequiresCharacters,
 		RAID_SCHEDULE_TEXT,
@@ -25,9 +26,8 @@
 			specs: string[];
 			notes?: string;
 		}>;
-		warcraftLogsUrl?: string;
-		raiderIoUrl?: string;
-		previousGuilds?: string;
+		pastRaidExperience?: string;
+		pastMythicPlusExperience?: string;
 		motivation: string;
 		experience?: string;
 		expectations: string;
@@ -42,11 +42,13 @@
 
 	let showCharacters = $derived(intentRequiresCharacters(application.intent));
 	let showRaidBanner = $derived(intentInvolvesRaids(application.intent));
-	let hasCompetitiveInfo = $derived(
-		!!application.warcraftLogsUrl?.trim() ||
-			!!application.raiderIoUrl?.trim() ||
-			!!application.previousGuilds?.trim()
+	let showRaidExperience = $derived(
+		intentInvolvesRaids(application.intent) && !!application.pastRaidExperience?.trim()
 	);
+	let showMythicPlusExperience = $derived(
+		intentInvolvesDungeons(application.intent) && !!application.pastMythicPlusExperience?.trim()
+	);
+	let hasCompetitiveInfo = $derived(showRaidExperience || showMythicPlusExperience);
 	let submittedAt = $derived(
 		new Date(application._creationTime).toLocaleString('pt-BR', {
 			day: '2-digit',
@@ -137,43 +139,20 @@
 			<Card.Header>
 				<Card.Title class="text-base">Hist&oacute;rico competitivo</Card.Title>
 			</Card.Header>
-			<Card.Content class="flex flex-col gap-2 text-sm">
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- external URLs -->
-				{#if application.warcraftLogsUrl?.trim()}
+			<Card.Content class="flex flex-col gap-3 text-sm">
+				{#if showRaidExperience}
 					<div>
-						<span class="text-xs text-muted-foreground">Warcraft Logs</span>
-						<p class="break-all">
-							<a
-								href={application.warcraftLogsUrl}
-								target="_blank"
-								rel="noopener"
-								class="text-primary hover:underline"
-							>
-								{application.warcraftLogsUrl}
-							</a>
-						</p>
+						<span class="text-xs text-muted-foreground">Raides em expans&otilde;es passadas</span>
+						<p class="whitespace-pre-wrap">{application.pastRaidExperience}</p>
 					</div>
 				{/if}
-				{#if application.raiderIoUrl?.trim()}
+				{#if showMythicPlusExperience}
+					{#if showRaidExperience}
+						<Separator />
+					{/if}
 					<div>
-						<span class="text-xs text-muted-foreground">Raider.IO</span>
-						<p class="break-all">
-							<a
-								href={application.raiderIoUrl}
-								target="_blank"
-								rel="noopener"
-								class="text-primary hover:underline"
-							>
-								{application.raiderIoUrl}
-							</a>
-						</p>
-					</div>
-				{/if}
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-				{#if application.previousGuilds?.trim()}
-					<div>
-						<span class="text-xs text-muted-foreground">Guilds anteriores</span>
-						<p class="whitespace-pre-wrap">{application.previousGuilds}</p>
+						<span class="text-xs text-muted-foreground">M+ em seasons passadas</span>
+						<p class="whitespace-pre-wrap">{application.pastMythicPlusExperience}</p>
 					</div>
 				{/if}
 			</Card.Content>

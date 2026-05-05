@@ -2,14 +2,6 @@ import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
 export default defineSchema({
-	pollResponses: defineTable({
-		name: v.string(),
-		classes: v.array(v.string()),
-		roles: v.array(v.string()),
-		raidStatus: v.union(v.literal('ready'), v.literal('later'), v.literal('not_interested')),
-		availableDate: v.optional(v.string()),
-		availability: v.optional(v.record(v.string(), v.boolean()))
-	}).index('by_name', ['name']),
 	characters: defineTable({
 		name: v.string(),
 		nameSlug: v.string(),
@@ -96,9 +88,8 @@ export default defineSchema({
 		),
 
 		// Histórico competitivo (todos opcionais)
-		warcraftLogsUrl: v.optional(v.string()),
-		raiderIoUrl: v.optional(v.string()),
-		previousGuilds: v.optional(v.string()),
+		pastRaidExperience: v.optional(v.string()),
+		pastMythicPlusExperience: v.optional(v.string()),
 
 		// Narrativa
 		motivation: v.string(),

@@ -91,15 +91,14 @@ export const NARRATIVE_MIN = 80;
 export const NARRATIVE_MAX = 2000;
 export const ADDITIONAL_NOTES_MAX = 2000;
 export const CHARACTER_NOTES_MAX = 500;
-export const PREVIOUS_GUILDS_MAX = 1000;
+export const PAST_RAID_EXPERIENCE_MAX = 1500;
+export const PAST_MYTHIC_PLUS_EXPERIENCE_MAX = 1500;
 export const DRAFT_STORAGE_KEY = 'clt-recruitment-draft';
 
 export const RAID_SCHEDULE_TEXT = 'Nossas raids acontecem às Segundas e Quintas, das 20h30 às 23h.';
 
 // Regex leve para BattleTag (ex: "Goblin#1234").
 export const BATTLETAG_REGEX = /^.+#\d{4,5}$/;
-// Regex leve para URL (apenas valida prefixo).
-export const URL_REGEX = /^https?:\/\//i;
 
 // ── Tipos compartilhados ─────────────────────────────────────────────
 
@@ -118,9 +117,8 @@ export type RecruitmentDraft = {
 	battleTag: string;
 	intent: ApplicationIntent | '';
 	characters: CharacterDraft[];
-	warcraftLogsUrl: string;
-	raiderIoUrl: string;
-	previousGuilds: string;
+	pastRaidExperience: string;
+	pastMythicPlusExperience: string;
 	motivation: string;
 	experience: string;
 	expectations: string;
@@ -145,9 +143,8 @@ export function makeEmptyDraft(): RecruitmentDraft {
 		battleTag: '',
 		intent: '',
 		characters: [],
-		warcraftLogsUrl: '',
-		raiderIoUrl: '',
-		previousGuilds: '',
+		pastRaidExperience: '',
+		pastMythicPlusExperience: '',
 		motivation: '',
 		experience: '',
 		expectations: '',

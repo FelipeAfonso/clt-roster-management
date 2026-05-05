@@ -96,15 +96,15 @@
 					<ul class="space-y-2">
 						<li class="flex items-center gap-3 border-b border-black/10 pb-2 text-base md:text-lg">
 							<span class="text-xl text-red">&starf;</span>
-							Conquista do HER&Oacute;ICO em Midnight
+							Pegar AotC (Acima do normal) todos os tiers.
 						</li>
 						<li class="flex items-center gap-3 border-b border-black/10 pb-2 text-base md:text-lg">
 							<span class="text-xl text-red">&starf;</span>
-							Progress&atilde;o em MYTHIC+
+							Progress&atilde;o constante em MYTHIC+
 						</li>
 						<li class="flex items-center gap-3 border-b border-black/10 pb-2 text-base md:text-lg">
 							<span class="text-xl text-red">&starf;</span>
-							Comunidade AL&Eacute;M de WoW
+							Comunidade al&eacute;m de WoW
 						</li>
 					</ul>
 				</div>
@@ -132,28 +132,21 @@
 				<div class="border-4 border-black bg-gradient-to-br from-red to-red-dark p-4 md:p-6">
 					<div class="flex flex-col items-center gap-4 md:flex-row">
 						<div class="flex-1 text-center text-cream md:text-left">
-							<h2 class="font-display text-2xl tracking-[0.1em] md:text-3xl">N&Atilde;O ESPERE!</h2>
+							<h2 class="font-display text-2xl tracking-[0.1em] md:text-3xl">
+								ALISTE-SE NO CARTEL!
+							</h2>
 							<p class="mt-1 text-sm md:text-base">
-								Entre para o Discord e assine sua carteira agora!
+								Preencha sua candidatura e venha cumprir os objetivos do partido.
 							</p>
 						</div>
 					</div>
 					<div class="mt-4 flex flex-wrap justify-center gap-3">
 						<Button
-							href="https://discord.gg/xsBcqCQX"
-							target="_blank"
-							rel="noopener"
+							href="/recrutamento"
 							variant="secondary"
 							class="font-display text-base tracking-[0.1em]"
 						>
-							ASSINAR CARTEIRA
-						</Button>
-						<Button
-							href="/enquete"
-							variant="outline"
-							class="border-cream font-display text-base tracking-[0.1em] text-cream hover:bg-cream/10"
-						>
-							RESPONDER ENQUETE
+							ENVIAR CANDIDATURA
 						</Button>
 					</div>
 				</div>

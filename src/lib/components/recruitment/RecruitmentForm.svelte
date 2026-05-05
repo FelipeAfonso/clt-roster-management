@@ -15,7 +15,10 @@
 		DRAFT_STORAGE_KEY,
 		NARRATIVE_MAX,
 		NARRATIVE_MIN,
-		URL_REGEX,
+		PAST_MYTHIC_PLUS_EXPERIENCE_MAX,
+		PAST_RAID_EXPERIENCE_MAX,
+		intentInvolvesDungeons,
+		intentInvolvesRaids,
 		intentRequiresCharacters,
 		makeEmptyDraft,
 		type ApplicationIntent,
@@ -124,11 +127,17 @@
 				return { ok: true };
 			}
 			case 'competitive': {
-				if (draft.warcraftLogsUrl.trim() && !URL_REGEX.test(draft.warcraftLogsUrl.trim())) {
-					return { ok: false, reason: 'URL do Warcraft Logs inválida.' };
+				if (draft.pastRaidExperience.length > PAST_RAID_EXPERIENCE_MAX) {
+					return {
+						ok: false,
+						reason: `Raides em expansões passadas: limite de ${PAST_RAID_EXPERIENCE_MAX} caracteres.`
+					};
 				}
-				if (draft.raiderIoUrl.trim() && !URL_REGEX.test(draft.raiderIoUrl.trim())) {
-					return { ok: false, reason: 'URL do Raider.IO inválida.' };
+				if (draft.pastMythicPlusExperience.length > PAST_MYTHIC_PLUS_EXPERIENCE_MAX) {
+					return {
+						ok: false,
+						reason: `M+ em seasons passadas: limite de ${PAST_MYTHIC_PLUS_EXPERIENCE_MAX} caracteres.`
+					};
 				}
 				return { ok: true };
 			}
@@ -201,6 +210,8 @@
 		try {
 			const intent = draft.intent as ApplicationIntent;
 			const requiresChars = intentRequiresCharacters(intent);
+			const involvesRaids = intentInvolvesRaids(intent);
+			const involvesDungeons = intentInvolvesDungeons(intent);
 			const id = await client.mutation(api.recruitment.submitApplication, {
 				displayName: draft.displayName.trim(),
 				discord: draft.discord.trim(),
@@ -216,9 +227,12 @@
 							notes: c.notes.trim() || undefined
 						}))
 					: [],
-				warcraftLogsUrl: requiresChars ? draft.warcraftLogsUrl.trim() || undefined : undefined,
-				raiderIoUrl: requiresChars ? draft.raiderIoUrl.trim() || undefined : undefined,
-				previousGuilds: requiresChars ? draft.previousGuilds.trim() || undefined : undefined,
+				pastRaidExperience: involvesRaids
+					? draft.pastRaidExperience.trim() || undefined
+					: undefined,
+				pastMythicPlusExperience: involvesDungeons
+					? draft.pastMythicPlusExperience.trim() || undefined
+					: undefined,
 				motivation: draft.motivation.trim(),
 				experience: requiresChars ? draft.experience.trim() : undefined,
 				expectations: draft.expectations.trim(),

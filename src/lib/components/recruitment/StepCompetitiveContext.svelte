@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Label } from '$lib/components/ui/label';
 	import {
-		PREVIOUS_GUILDS_MAX,
+		PAST_MYTHIC_PLUS_EXPERIENCE_MAX,
+		PAST_RAID_EXPERIENCE_MAX,
 		RAID_SCHEDULE_TEXT,
-		URL_REGEX,
+		intentInvolvesDungeons,
 		intentInvolvesRaids,
 		type ApplicationIntent,
 		type RecruitmentDraft
@@ -15,15 +16,10 @@
 		draft: RecruitmentDraft;
 	} = $props();
 
-	let logsInvalid = $derived(
-		draft.warcraftLogsUrl.trim().length > 0 && !URL_REGEX.test(draft.warcraftLogsUrl.trim())
-	);
-	let raiderIoInvalid = $derived(
-		draft.raiderIoUrl.trim().length > 0 && !URL_REGEX.test(draft.raiderIoUrl.trim())
-	);
-	let showRaidBanner = $derived(
-		!!draft.intent && intentInvolvesRaids(draft.intent as ApplicationIntent)
-	);
+	let intent = $derived(draft.intent as ApplicationIntent);
+	let showRaidBanner = $derived(!!draft.intent && intentInvolvesRaids(intent));
+	let showRaidField = $derived(!!draft.intent && intentInvolvesRaids(intent));
+	let showMythicPlusField = $derived(!!draft.intent && intentInvolvesDungeons(intent));
 </script>
 
 <div class="flex flex-col gap-5">
@@ -39,67 +35,47 @@
 	{/if}
 
 	<p class="text-sm text-muted-foreground">
-		Tudo nesta etapa &eacute; opcional. Quanto mais voc&ecirc; compartilhar, melhor pra gente
-		entender seu n&iacute;vel.
+		Tudo nesta etapa &eacute; opcional e sem julgamento &mdash; queremos s&oacute; entender sua
+		hist&oacute;ria. &ldquo;Nunca fiz&rdquo; &eacute; resposta v&aacute;lida.
 	</p>
 
-	<div>
-		<Label for="warcraft-logs">
-			Warcraft Logs
-			<span class="text-xs font-normal text-muted-foreground">(opcional)</span>
-		</Label>
-		<input
-			id="warcraft-logs"
-			type="url"
-			bind:value={draft.warcraftLogsUrl}
-			placeholder="https://www.warcraftlogs.com/character/..."
-			autocomplete="off"
-			aria-invalid={logsInvalid}
-			class="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm"
-		/>
-		{#if logsInvalid}
-			<p class="mt-1 text-xs text-destructive">
-				URL precisa come&ccedil;ar com http:// ou https://
+	{#if showRaidField}
+		<div>
+			<Label for="past-raid-experience">
+				Raides em expans&otilde;es passadas
+				<span class="text-xs font-normal text-muted-foreground">(opcional)</span>
+			</Label>
+			<textarea
+				id="past-raid-experience"
+				bind:value={draft.pastRaidExperience}
+				placeholder="Ex: AOTC em Aberrus, normal de Castle Nathria, mythic do SoO l&aacute; em 2014, ou nunca raidei ainda."
+				rows={4}
+				maxlength={PAST_RAID_EXPERIENCE_MAX}
+				class="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm"
+			></textarea>
+			<p class="mt-1 text-right text-xs text-muted-foreground">
+				{draft.pastRaidExperience.length}/{PAST_RAID_EXPERIENCE_MAX}
 			</p>
-		{/if}
-	</div>
+		</div>
+	{/if}
 
-	<div>
-		<Label for="raider-io">
-			Raider.IO
-			<span class="text-xs font-normal text-muted-foreground">(opcional)</span>
-		</Label>
-		<input
-			id="raider-io"
-			type="url"
-			bind:value={draft.raiderIoUrl}
-			placeholder="https://raider.io/characters/..."
-			autocomplete="off"
-			aria-invalid={raiderIoInvalid}
-			class="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm"
-		/>
-		{#if raiderIoInvalid}
-			<p class="mt-1 text-xs text-destructive">
-				URL precisa come&ccedil;ar com http:// ou https://
+	{#if showMythicPlusField}
+		<div>
+			<Label for="past-mythic-plus-experience">
+				M+ em seasons passadas
+				<span class="text-xs font-normal text-muted-foreground">(opcional)</span>
+			</Label>
+			<textarea
+				id="past-mythic-plus-experience"
+				bind:value={draft.pastMythicPlusExperience}
+				placeholder="Ex: t&iacute;tulo Keystone Hero na S2, key mais alta foi +18, ou s&oacute; fiz dungeon casual mesmo."
+				rows={4}
+				maxlength={PAST_MYTHIC_PLUS_EXPERIENCE_MAX}
+				class="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm"
+			></textarea>
+			<p class="mt-1 text-right text-xs text-muted-foreground">
+				{draft.pastMythicPlusExperience.length}/{PAST_MYTHIC_PLUS_EXPERIENCE_MAX}
 			</p>
-		{/if}
-	</div>
-
-	<div>
-		<Label for="previous-guilds">
-			Guilds anteriores
-			<span class="text-xs font-normal text-muted-foreground">(opcional)</span>
-		</Label>
-		<textarea
-			id="previous-guilds"
-			bind:value={draft.previousGuilds}
-			placeholder="Onde voc&ecirc; jogou antes? Por que saiu?"
-			rows={4}
-			maxlength={PREVIOUS_GUILDS_MAX}
-			class="mt-1 w-full rounded border border-input bg-background px-3 py-2 text-sm"
-		></textarea>
-		<p class="mt-1 text-right text-xs text-muted-foreground">
-			{draft.previousGuilds.length}/{PREVIOUS_GUILDS_MAX}
-		</p>
-	</div>
+		</div>
+	{/if}
 </div>

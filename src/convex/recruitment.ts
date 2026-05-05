@@ -32,9 +32,9 @@ const NARRATIVE_MIN = 80;
 const NARRATIVE_MAX = 2000;
 const ADDITIONAL_NOTES_MAX = 2000;
 const CHARACTER_NOTES_MAX = 500;
-const PREVIOUS_GUILDS_MAX = 1000;
+const PAST_RAID_EXPERIENCE_MAX = 1500;
+const PAST_MYTHIC_PLUS_EXPERIENCE_MAX = 1500;
 const BATTLETAG_REGEX = /^.+#\d{4,5}$/;
-const URL_REGEX = /^https?:\/\//i;
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -54,13 +54,6 @@ function assertNarrative(value: string, fieldLabel: string): void {
 	}
 }
 
-function assertOptionalUrl(value: string | undefined, fieldLabel: string): void {
-	if (!value) return;
-	if (!URL_REGEX.test(value)) {
-		throw new ConvexError(`${fieldLabel} precisa começar com http:// ou https://.`);
-	}
-}
-
 function assertOptionalLength(value: string | undefined, max: number, fieldLabel: string): void {
 	if (!value) return;
 	if (value.length > max) {
@@ -77,9 +70,8 @@ export const submitApplication = mutation({
 		battleTag: v.optional(v.string()),
 		intent: intentValidator,
 		characters: v.array(characterValidator),
-		warcraftLogsUrl: v.optional(v.string()),
-		raiderIoUrl: v.optional(v.string()),
-		previousGuilds: v.optional(v.string()),
+		pastRaidExperience: v.optional(v.string()),
+		pastMythicPlusExperience: v.optional(v.string()),
 		motivation: v.string(),
 		experience: v.optional(v.string()),
 		expectations: v.string(),
@@ -103,12 +95,14 @@ export const submitApplication = mutation({
 
 		// Campos condicionais ao intent
 		const requiresCharacters = args.intent !== 'community_only';
+		const involvesRaids = args.intent === 'raids_only' || args.intent === 'raids_and_dungeons';
+		const involvesDungeons =
+			args.intent === 'dungeons_only' || args.intent === 'raids_and_dungeons';
 
 		let characters: typeof args.characters = [];
 		let experience: string | undefined;
-		let warcraftLogsUrl: string | undefined;
-		let raiderIoUrl: string | undefined;
-		let previousGuilds: string | undefined;
+		let pastRaidExperience: string | undefined;
+		let pastMythicPlusExperience: string | undefined;
 
 		if (requiresCharacters) {
 			if (args.characters.length === 0) {
@@ -145,13 +139,23 @@ export const submitApplication = mutation({
 			}
 			assertNarrative(args.experience, 'A experiência');
 			experience = args.experience.trim();
+		}
 
-			warcraftLogsUrl = trimOrUndefined(args.warcraftLogsUrl);
-			raiderIoUrl = trimOrUndefined(args.raiderIoUrl);
-			previousGuilds = trimOrUndefined(args.previousGuilds);
-			assertOptionalUrl(warcraftLogsUrl, 'O link do Warcraft Logs');
-			assertOptionalUrl(raiderIoUrl, 'O link do Raider.IO');
-			assertOptionalLength(previousGuilds, PREVIOUS_GUILDS_MAX, 'Guilds anteriores');
+		if (involvesRaids) {
+			pastRaidExperience = trimOrUndefined(args.pastRaidExperience);
+			assertOptionalLength(
+				pastRaidExperience,
+				PAST_RAID_EXPERIENCE_MAX,
+				'Raides em expansões passadas'
+			);
+		}
+		if (involvesDungeons) {
+			pastMythicPlusExperience = trimOrUndefined(args.pastMythicPlusExperience);
+			assertOptionalLength(
+				pastMythicPlusExperience,
+				PAST_MYTHIC_PLUS_EXPERIENCE_MAX,
+				'M+ em seasons passadas'
+			);
 		}
 
 		const additionalNotes = trimOrUndefined(args.additionalNotes);
@@ -163,9 +167,8 @@ export const submitApplication = mutation({
 			battleTag,
 			intent: args.intent,
 			characters,
-			warcraftLogsUrl,
-			raiderIoUrl,
-			previousGuilds,
+			pastRaidExperience,
+			pastMythicPlusExperience,
 			motivation: args.motivation.trim(),
 			experience,
 			expectations: args.expectations.trim(),
@@ -180,7 +183,8 @@ export const submitApplication = mutation({
 export const updateApplicationStatus = mutation({
 	args: {
 		id: v.id('guildApplications'),
-		status: statusValidator
+		status: statusValidator,
+		reviewerEmail: v.string()
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
@@ -189,7 +193,7 @@ export const updateApplicationStatus = mutation({
 		const existing = await ctx.db.get(args.id);
 		if (!existing) throw new ConvexError('Candidatura não encontrada.');
 
-		const reviewerEmail = (identity.email as string | undefined) ?? identity.subject;
+		const reviewerEmail = args.reviewerEmail.trim() || identity.subject;
 
 		await ctx.db.patch(args.id, {
 			status: args.status,
@@ -203,7 +207,8 @@ export const updateApplicationStatus = mutation({
 export const addReviewerNote = mutation({
 	args: {
 		id: v.id('guildApplications'),
-		note: v.string()
+		note: v.string(),
+		authorEmail: v.string()
 	},
 	handler: async (ctx, args) => {
 		const identity = await ctx.auth.getUserIdentity();
@@ -218,11 +223,11 @@ export const addReviewerNote = mutation({
 		const existing = await ctx.db.get(args.id);
 		if (!existing) throw new ConvexError('Candidatura não encontrada.');
 
-		const reviewerEmail = (identity.email as string | undefined) ?? identity.subject;
+		const authorEmail = args.authorEmail.trim() || identity.subject;
 		const notes = existing.reviewerNotes ?? [];
 		notes.push({
 			note: trimmed,
-			authorEmail: reviewerEmail,
+			authorEmail,
 			createdAt: Date.now()
 		});
 

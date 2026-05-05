@@ -16,9 +16,11 @@
 		type ApplicationIntent,
 		type ApplicationStatus
 	} from '$lib/constants/recruitment';
+	import { useAuthState } from '$lib/auth.svelte';
 	import { ArrowLeft } from '@lucide/svelte';
 
 	const client = useConvexClient();
+	const auth = useAuthState();
 
 	let applicationId = $derived(page.params.id as Id<'guildApplications'>);
 
@@ -38,7 +40,8 @@
 		try {
 			await client.mutation(api.recruitment.updateApplicationStatus, {
 				id: applicationId,
-				status: newStatus
+				status: newStatus,
+				reviewerEmail: auth.user?.email ?? ''
 			});
 		} catch (err) {
 			console.error('Falha ao atualizar status:', err);
@@ -57,7 +60,8 @@
 		try {
 			await client.mutation(api.recruitment.addReviewerNote, {
 				id: applicationId,
-				note: trimmed
+				note: trimmed,
+				authorEmail: auth.user?.email ?? ''
 			});
 			noteDraft = '';
 		} catch (err) {
@@ -110,9 +114,8 @@
 				battleTag: app.battleTag,
 				intent: app.intent as ApplicationIntent,
 				characters: app.characters,
-				warcraftLogsUrl: app.warcraftLogsUrl,
-				raiderIoUrl: app.raiderIoUrl,
-				previousGuilds: app.previousGuilds,
+				pastRaidExperience: app.pastRaidExperience,
+				pastMythicPlusExperience: app.pastMythicPlusExperience,
 				motivation: app.motivation,
 				experience: app.experience,
 				expectations: app.expectations,
