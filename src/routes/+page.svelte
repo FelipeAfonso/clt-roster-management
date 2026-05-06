@@ -203,6 +203,118 @@
 			</div>
 		</section>
 
+		<!-- About Section -->
+		<section class="mt-12">
+			<div class="mb-8 text-center">
+				<h2
+					class="font-display text-4xl tracking-[0.1em] text-black drop-shadow-[3px_3px_0_#c41e3a] md:text-5xl lg:text-6xl"
+				>
+					CONHEÇA O CARTEL
+				</h2>
+				<div class="mx-auto mt-3 h-1 w-32 bg-red"></div>
+			</div>
+
+			<div class="grid gap-8 lg:grid-cols-2">
+				<!-- Left: Quem Somos -->
+				<div class="border-4 border-black bg-cream p-5 md:p-8">
+					<h3
+						class="mb-4 border-b-[3px] border-black pb-2 font-display text-xl tracking-[0.1em] text-red md:text-2xl"
+					>
+						QUEM SOMOS
+					</h3>
+					<p class="text-base leading-relaxed md:text-lg">
+						Somos uma guilda nova, com <strong class="text-red">intenções ambiciosas</strong>, mas com
+						uma janela de comprometimento <strong class="text-red">casual</strong>. Afinal, todos aqui
+						somos CLT, de uma forma ou de outra.
+					</p>
+					<p class="mt-4 text-base leading-relaxed md:text-lg">
+						Nosso objetivo é de Raids Heróicas, com meta de
+						<strong class="text-red">AotC todo tier</strong>, uma agenda enxuta de
+						<strong>2 dias por semana</strong>, e com um grupo pequeno, mas entrosado. Também temos
+						membros mais ativos que já possuem seu histórico com
+						<strong class="text-red">Mythic+</strong> e progridem neste conteúdo também.
+					</p>
+					<p class="mt-4 text-base leading-relaxed md:text-lg">
+						Já estamos progredindo no heróico com aproximadamente <strong>15 pessoas</strong>. Mesmo se
+						você não tiver experiência, estamos dispostos a te ajudar a consegui-la — apenas contamos
+						com seu empenho!
+					</p>
+				</div>
+
+				<!-- Right: A Comunidade -->
+				<div class="space-y-6">
+					<div class="bg-black p-5 md:p-8">
+						<h3
+							class="mb-4 border-b-[3px] border-gold pb-2 font-display text-xl tracking-[0.1em] text-gold md:text-2xl"
+						>
+							ALÉM DE AZEROTH
+						</h3>
+						<p class="text-base leading-relaxed text-cream md:text-lg">
+							Nosso propósito maior é uma <strong class="text-gold">comunidade saudável</strong> que
+							vai além de WoW. Frequentemente jogamos outros títulos juntos:
+						</p>
+						<div class="mt-4 flex flex-wrap gap-2">
+							{#each ['Hytale', 'REPO', 'Deep Rock Galactic', 'Ragnarok Online', 'Overwatch'] as game}
+								<span
+									class="border-2 border-gold/50 bg-gold/10 px-3 py-1 font-display text-sm tracking-[0.1em] text-cream"
+								>
+									{game.toUpperCase()}
+								</span>
+							{/each}
+						</div>
+						<p class="mt-4 text-sm text-cream/70 md:text-base">
+							Nossos horários no Discord: durante a semana à noite, e finais de semana à tarde e à
+							noite.
+						</p>
+					</div>
+
+					<div class="border-4 border-red bg-gradient-to-br from-red-dark to-black p-5 md:p-8">
+						<h3
+							class="mb-3 font-display text-xl tracking-[0.1em] text-cream md:text-2xl"
+						>
+							O RECRUTAMENTO
+						</h3>
+						<p class="text-base leading-relaxed text-cream md:text-lg">
+							Nós estamos atrás de <strong class="text-gold">pessoas legais</strong>, não de
+							jogadores com certos parâmetros. Não importa sua facção, servidor, ilvl, experiência ou
+							se até mesmo for um <span class="text-gold">Gnomo</span> ou
+							<span class="text-gold">Vulpera</span>.
+						</p>
+						<p class="mt-3 text-sm text-cream/80 md:text-base">
+							Desde que você tenha entre 1 e 12 dedos, um olho e um ouvido — você será bem vinda(o)!
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Schedule Banner -->
+			<div
+				class="mt-8 flex flex-col items-center gap-4 border-4 border-black bg-cream p-5 md:flex-row md:gap-8 md:p-8"
+			>
+				<div class="flex-1">
+					<h3 class="font-display text-xl tracking-[0.1em] text-red md:text-2xl">
+						HORÁRIO DE RAID
+					</h3>
+					<p class="mt-2 text-base leading-relaxed md:text-lg">
+						<strong>Segundas e Quintas</strong>, das
+						<strong class="text-red">20h30</strong> às
+						<strong class="text-red">23h</strong>
+						(horário de Brasília).
+					</p>
+				</div>
+				<div class="flex gap-4">
+					<div class="bg-black px-5 py-3 text-center">
+						<span class="block font-display text-2xl text-cream md:text-3xl">SEG</span>
+						<span class="text-xs tracking-[0.15em] text-gold">20h30</span>
+					</div>
+					<div class="bg-black px-5 py-3 text-center">
+						<span class="block font-display text-2xl text-cream md:text-3xl">QUI</span>
+						<span class="text-xs tracking-[0.15em] text-gold">20h30</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
 		<!-- Fine Print -->
 		<footer class="mt-8 border-t-[3px] border-black pt-6">
 			<div class="mb-2 font-display text-sm tracking-[0.15em] text-red">
