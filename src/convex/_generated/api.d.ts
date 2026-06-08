@@ -17,6 +17,7 @@ import type * as discord_commands from "../discord/commands.js";
 import type * as discord_http from "../discord/http.js";
 import type * as discord_messages from "../discord/messages.js";
 import type * as discord_types from "../discord/types.js";
+import type * as email from "../email.js";
 import type * as http from "../http.js";
 import type * as recruitment from "../recruitment.js";
 
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   "discord/http": typeof discord_http;
   "discord/messages": typeof discord_messages;
   "discord/types": typeof discord_types;
+  email: typeof email;
   http: typeof http;
   recruitment: typeof recruitment;
 }>;

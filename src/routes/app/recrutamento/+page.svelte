@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import type { Doc } from '$convex/_generated/dataModel';
@@ -7,6 +8,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import ApplicationStatusBadge from '$lib/components/recruitment/ApplicationStatusBadge.svelte';
+	import DraftCard from '$lib/components/recruitment/DraftCard.svelte';
 	import {
 		APPLICATION_STATUSES,
 		INTENT_LABELS,
@@ -20,9 +22,16 @@
 	type Application = Doc<'guildApplications'>;
 
 	const applications = useQuery(api.recruitment.listApplications, {});
+	const drafts = useQuery(api.recruitment.listDrafts, {});
 
 	let allApps = $derived<Application[]>(applications.data ?? []);
 	let totalCount = $derived(allApps.length);
+
+	let allDrafts = $derived<Doc<'applicationDrafts'>[]>(drafts.data ?? []);
+	let draftCount = $derived(allDrafts.length);
+
+	// Aba inicial controlada por ?tab= (deep link a partir do painel).
+	let tabValue = $state(page.url.searchParams.get('tab') === 'rascunhos' ? 'drafts' : 'pending');
 
 	function countByStatus(status: ApplicationStatus): number {
 		return allApps.filter((a: Application) => a.status === status).length;
@@ -60,7 +69,7 @@
 	{:else if applications.error}
 		<p class="text-destructive">Erro ao carregar candidaturas.</p>
 	{:else}
-		<div class="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-5">
+		<div class="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-6">
 			<Card.Root>
 				<Card.Content class="p-3 text-center">
 					<p class="text-2xl font-bold">{totalCount}</p>
@@ -75,9 +84,15 @@
 					</Card.Content>
 				</Card.Root>
 			{/each}
+			<Card.Root>
+				<Card.Content class="p-3 text-center">
+					<p class="text-2xl font-bold">{draftCount}</p>
+					<p class="text-xs text-muted-foreground">Rascunhos</p>
+				</Card.Content>
+			</Card.Root>
 		</div>
 
-		<Tabs.Root value="pending">
+		<Tabs.Root bind:value={tabValue}>
 			<Tabs.List class="mb-4 w-full">
 				{#each APPLICATION_STATUSES as status (status)}
 					<Tabs.Trigger value={status} class="flex-1">
@@ -85,6 +100,10 @@
 						<span class="ml-1 text-xs text-muted-foreground">({countByStatus(status)})</span>
 					</Tabs.Trigger>
 				{/each}
+				<Tabs.Trigger value="drafts" class="flex-1">
+					Rascunhos
+					<span class="ml-1 text-xs text-muted-foreground">({draftCount})</span>
+				</Tabs.Trigger>
 			</Tabs.List>
 
 			{#each APPLICATION_STATUSES as status (status)}
@@ -135,6 +154,22 @@
 					{/if}
 				</Tabs.Content>
 			{/each}
+
+			<Tabs.Content value="drafts">
+				{#if drafts.isLoading}
+					<p class="text-center text-sm text-muted-foreground">Carregando...</p>
+				{:else if drafts.error}
+					<p class="text-center text-sm text-destructive">Erro ao carregar rascunhos.</p>
+				{:else if allDrafts.length === 0}
+					<p class="text-center text-sm text-muted-foreground">Nenhum rascunho em andamento.</p>
+				{:else}
+					<div class="flex flex-col gap-2">
+						{#each allDrafts as draft (draft._id)}
+							<DraftCard {draft} />
+						{/each}
+					</div>
+				{/if}
+			</Tabs.Content>
 		</Tabs.Root>
 	{/if}
 </div>

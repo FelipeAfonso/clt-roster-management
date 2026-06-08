@@ -1,4 +1,5 @@
 import { ConvexError, v } from 'convex/values';
+import { internal } from './_generated/api';
 import { mutation, query } from './_generated/server';
 
 // ── Validators reutilizáveis ─────────────────────────────────────────
@@ -24,6 +25,17 @@ const characterValidator = v.object({
 	class: v.string(),
 	specs: v.array(v.string()),
 	notes: v.optional(v.string())
+});
+
+// Personagem dentro de um rascunho: parcial, `notes` sempre string (igual ao
+// CharacterDraft do cliente em src/lib/constants/recruitment.ts).
+const draftCharacterValidator = v.object({
+	name: v.string(),
+	realm: v.string(),
+	realmDisplay: v.string(),
+	class: v.string(),
+	specs: v.array(v.string()),
+	notes: v.string()
 });
 
 // ── Limites (espelham src/lib/constants/recruitment.ts) ─────────────
@@ -176,6 +188,15 @@ export const submitApplication = mutation({
 			status: 'pending'
 		});
 
+		// Notifica a guilda por e-mail. Roda após o commit; falhas no envio não
+		// afetam a candidatura já persistida.
+		await ctx.scheduler.runAfter(0, internal.email.sendApplicationNotification, {
+			applicationId: id,
+			displayName,
+			discord,
+			intent: args.intent
+		});
+
 		return id;
 	}
 });
@@ -233,6 +254,67 @@ export const addReviewerNote = mutation({
 
 		await ctx.db.patch(args.id, { reviewerNotes: notes });
 		return args.id;
+	}
+});
+
+// ── Rascunhos (candidaturas não enviadas) ────────────────────────────
+
+// Upsert de rascunho a partir do formulário público (sem auth). O cliente só
+// chama quando há nome ou Discord preenchido, então evitamos linhas vazias.
+export const saveDraft = mutation({
+	args: {
+		draftId: v.string(),
+		displayName: v.optional(v.string()),
+		discord: v.optional(v.string()),
+		battleTag: v.optional(v.string()),
+		intent: v.optional(v.string()),
+		characters: v.optional(v.array(draftCharacterValidator)),
+		pastRaidExperience: v.optional(v.string()),
+		pastMythicPlusExperience: v.optional(v.string()),
+		motivation: v.optional(v.string()),
+		experience: v.optional(v.string()),
+		expectations: v.optional(v.string()),
+		additionalNotes: v.optional(v.string()),
+		lastStep: v.optional(v.string())
+	},
+	handler: async (ctx, args) => {
+		const draftId = args.draftId.trim();
+		if (!draftId) throw new ConvexError('draftId inválido.');
+
+		const { draftId: _ignored, ...fields } = args;
+		const existing = await ctx.db
+			.query('applicationDrafts')
+			.withIndex('by_draftId', (q) => q.eq('draftId', draftId))
+			.unique();
+
+		if (existing) {
+			await ctx.db.patch(existing._id, { ...fields, updatedAt: Date.now() });
+			return existing._id;
+		}
+
+		return await ctx.db.insert('applicationDrafts', {
+			draftId,
+			...fields,
+			updatedAt: Date.now()
+		});
+	}
+});
+
+// Remove um rascunho (idempotente). Chamado no envio bem-sucedido e ao recomeçar.
+export const deleteDraft = mutation({
+	args: { draftId: v.string() },
+	handler: async (ctx, args) => {
+		const draftId = args.draftId.trim();
+		if (!draftId) return;
+
+		const existing = await ctx.db
+			.query('applicationDrafts')
+			.withIndex('by_draftId', (q) => q.eq('draftId', draftId))
+			.unique();
+
+		if (existing) {
+			await ctx.db.delete(existing._id);
+		}
 	}
 });
 
@@ -302,5 +384,16 @@ export const findRecentByDiscord = query({
 			status: found.status,
 			displayName: found.displayName
 		};
+	}
+});
+
+export const listDrafts = query({
+	args: {},
+	handler: async (ctx) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) throw new ConvexError('Não autenticado.');
+
+		const drafts = await ctx.db.query('applicationDrafts').collect();
+		return drafts.sort((a, b) => b.updatedAt - a.updatedAt);
 	}
 });

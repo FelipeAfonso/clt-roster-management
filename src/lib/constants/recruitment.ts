@@ -57,6 +57,16 @@ export const INTENT_VARIANTS: Record<
 	raids_and_dungeons: 'default'
 };
 
+// Rótulos das etapas do formulário (usados também ao exibir rascunhos).
+export const STEP_LABELS: Record<string, string> = {
+	identity: 'Identidade',
+	intent: 'Triagem',
+	characters: 'Personagens',
+	competitive: 'Histórico competitivo',
+	narrative: 'Sobre você',
+	review: 'Revisão'
+};
+
 // ── Helpers de lógica condicional ────────────────────────────────────
 
 export function intentRequiresCharacters(intent: ApplicationIntent): boolean {
@@ -94,6 +104,7 @@ export const CHARACTER_NOTES_MAX = 500;
 export const PAST_RAID_EXPERIENCE_MAX = 1500;
 export const PAST_MYTHIC_PLUS_EXPERIENCE_MAX = 1500;
 export const DRAFT_STORAGE_KEY = 'clt-recruitment-draft';
+export const DRAFT_ID_STORAGE_KEY = 'clt-recruitment-draft-id';
 
 export const RAID_SCHEDULE_TEXT = 'Nossas raids acontecem às Segundas e Quintas, das 20h30 às 23h.';
 

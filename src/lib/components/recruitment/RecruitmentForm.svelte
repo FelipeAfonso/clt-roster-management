@@ -12,6 +12,7 @@
 	import StepReview from './StepReview.svelte';
 	import {
 		BATTLETAG_REGEX,
+		DRAFT_ID_STORAGE_KEY,
 		DRAFT_STORAGE_KEY,
 		NARRATIVE_MAX,
 		NARRATIVE_MIN,
@@ -44,6 +45,7 @@
 	let submitError = $state<string | null>(null);
 	let submittedId = $state<string | null>(null);
 	let draftLoaded = $state(false);
+	let draftId = $state('');
 
 	let visibleSteps = $derived<StepId[]>(buildStepList(draft.intent));
 	let currentStep = $derived(visibleSteps[stepIndex] ?? 'identity');
@@ -75,11 +77,48 @@
 					characters: Array.isArray(parsed.characters) ? parsed.characters : []
 				};
 			}
+
+			// Identificador persistente do rascunho (chave de upsert no servidor).
+			const storedId = window.localStorage.getItem(DRAFT_ID_STORAGE_KEY);
+			if (storedId) {
+				draftId = storedId;
+			} else {
+				draftId = crypto.randomUUID();
+				window.localStorage.setItem(DRAFT_ID_STORAGE_KEY, draftId);
+			}
 		} catch (err) {
 			console.warn('Falha ao restaurar rascunho de candidatura:', err);
 		} finally {
 			draftLoaded = true;
 		}
+	});
+
+	// ── Persiste rascunho no servidor (debounced) ──────────────────
+	// Só envia depois que houver nome ou Discord, evitando linhas vazias.
+	$effect(() => {
+		if (!draftLoaded) return;
+		if (submittedId) return;
+		if (typeof window === 'undefined') return;
+		if (!draftId) return;
+
+		const snapshot = JSON.stringify(draft);
+		const step = currentStep;
+		const hasIdentity = draft.displayName.trim() !== '' || draft.discord.trim() !== '';
+		if (!hasIdentity) return;
+
+		const id = draftId;
+		const timer = setTimeout(() => {
+			if (submittedId) return;
+			client
+				.mutation(api.recruitment.saveDraft, {
+					draftId: id,
+					...(JSON.parse(snapshot) as RecruitmentDraft),
+					lastStep: step
+				})
+				.catch((err) => console.warn('Falha ao salvar rascunho no servidor:', err));
+		}, 1500);
+
+		return () => clearTimeout(timer);
 	});
 
 	// ── Persiste draft a cada mudança ──────────────────────────────
@@ -241,6 +280,13 @@
 			submittedId = id;
 			if (typeof window !== 'undefined') {
 				window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+				window.localStorage.removeItem(DRAFT_ID_STORAGE_KEY);
+			}
+			// Remove o rascunho do servidor agora que virou candidatura.
+			if (draftId) {
+				client
+					.mutation(api.recruitment.deleteDraft, { draftId })
+					.catch((err) => console.warn('Falha ao remover rascunho do servidor:', err));
 			}
 		} catch (err) {
 			console.error('Falha ao enviar candidatura:', err);
@@ -252,12 +298,20 @@
 	}
 
 	function startOver(): void {
+		// Remove o rascunho anterior do servidor (idempotente) e gera um novo id.
+		if (draftId) {
+			client
+				.mutation(api.recruitment.deleteDraft, { draftId })
+				.catch((err) => console.warn('Falha ao remover rascunho do servidor:', err));
+		}
 		draft = makeEmptyDraft();
 		stepIndex = 0;
 		submittedId = null;
 		submitError = null;
+		draftId = crypto.randomUUID();
 		if (typeof window !== 'undefined') {
 			window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+			window.localStorage.setItem(DRAFT_ID_STORAGE_KEY, draftId);
 		}
 	}
 </script>
@@ -290,6 +344,9 @@
 				style="width: {((stepIndex + 1) / totalSteps) * 100}%"
 			></div>
 		</div>
+		<p class="text-center text-xs text-muted-foreground">
+			Seu progresso &eacute; salvo automaticamente.
+		</p>
 
 		<Card.Root>
 			<Card.Header>

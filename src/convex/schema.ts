@@ -118,5 +118,36 @@ export default defineSchema({
 	})
 		.index('by_status', ['status'])
 		.index('by_discord', ['discord'])
-		.index('by_intent', ['intent'])
+		.index('by_intent', ['intent']),
+
+	// Rascunhos de candidaturas ainda não enviadas. Persistidos a partir do
+	// formulário público (sem auth) para que a guilda veja candidaturas
+	// abandonadas. Todos os campos são opcionais porque o rascunho é parcial.
+	applicationDrafts: defineTable({
+		draftId: v.string(), // UUID gerado no cliente, chave de upsert
+		displayName: v.optional(v.string()),
+		discord: v.optional(v.string()),
+		battleTag: v.optional(v.string()),
+		intent: v.optional(v.string()), // pode ser '' no meio do formulário
+		characters: v.optional(
+			v.array(
+				v.object({
+					name: v.string(),
+					realm: v.string(),
+					realmDisplay: v.string(),
+					class: v.string(),
+					specs: v.array(v.string()),
+					notes: v.string()
+				})
+			)
+		),
+		pastRaidExperience: v.optional(v.string()),
+		pastMythicPlusExperience: v.optional(v.string()),
+		motivation: v.optional(v.string()),
+		experience: v.optional(v.string()),
+		expectations: v.optional(v.string()),
+		additionalNotes: v.optional(v.string()),
+		lastStep: v.optional(v.string()),
+		updatedAt: v.number()
+	}).index('by_draftId', ['draftId'])
 });
