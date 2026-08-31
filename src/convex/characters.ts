@@ -152,8 +152,10 @@ export const listRealms = action({
 			console.error(`[bnet] realm index fetch failed: ${res.status} ${res.statusText}`, body);
 			throw new Error(`Realm list fetch failed: ${res.status}`);
 		}
-		const data = (await res.json()) as { realms: Array<{ name: string; slug: string }> };
+		const data = (await res.json()) as { realms: Array<{ name: string | null; slug: string }> };
+		// Internal Blizzard realms (e.g. "us1-100-partner") come back with a null name
 		return data.realms
+			.filter((r): r is { name: string; slug: string } => !!r.name && !!r.slug)
 			.map((r) => ({ name: r.name, slug: r.slug }))
 			.sort((a, b) => a.name.localeCompare(b.name));
 	}
