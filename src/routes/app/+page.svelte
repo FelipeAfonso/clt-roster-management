@@ -42,12 +42,14 @@
 	let draftCount = $derived(allDrafts.length);
 	let recentDrafts = $derived(allDrafts.slice(0, 5));
 
-	let rosterTotal = $derived(characters.data?.length ?? 0);
+	let activeCharacters = $derived(
+		(characters.data ?? []).filter((c: Doc<'characters'>) => c.archivedAt == null)
+	);
+	let rosterTotal = $derived(activeCharacters.length);
 	let avgIlvl = $derived.by(() => {
-		const data = characters.data ?? [];
 		let sum = 0;
 		let count = 0;
-		for (const char of data) {
+		for (const char of activeCharacters) {
 			if (char.equippedItemLevel) {
 				sum += char.equippedItemLevel;
 				count++;

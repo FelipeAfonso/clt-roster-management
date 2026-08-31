@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
+	import type { Doc, Id } from '$convex/_generated/dataModel';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
@@ -16,6 +16,8 @@
 		Plus,
 		RefreshCw,
 		Trash2,
+		Archive,
+		ArchiveRestore,
 		Shield,
 		ArrowUpDown,
 		ArrowUp,
@@ -63,6 +65,15 @@
 	let sortColumn = $state<SortColumn | null>(null);
 	let sortDirection = $state<SortDirection>('asc');
 
+	// Modo de exibição: por padrão só personagens ativos (não arquivados)
+	type ArchiveView = 'active' | 'archived' | 'all';
+	let archiveView = $state<ArchiveView>('active');
+	const ARCHIVE_VIEW_OPTIONS: { value: ArchiveView; label: string }[] = [
+		{ value: 'active', label: 'Ativos' },
+		{ value: 'archived', label: 'Arquivados' },
+		{ value: 'all', label: 'Todos' }
+	];
+
 	// Filter state
 	let filterActivity = $state(new Set<string>());
 	let filterRole = $state(new Set<string>());
@@ -90,8 +101,17 @@
 		return next;
 	}
 
-	let filteredCharacters = $derived.by(() => {
+	let visibleCharacters = $derived.by(() => {
 		const data = characters.data;
+		if (!data) return data;
+		if (archiveView === 'all') return data;
+		return data.filter((char: Doc<'characters'>) =>
+			archiveView === 'archived' ? char.archivedAt != null : char.archivedAt == null
+		);
+	});
+
+	let filteredCharacters = $derived.by(() => {
+		const data = visibleCharacters;
 		if (!data) return data;
 		if (!hasActiveFilters) return data;
 
@@ -222,7 +242,7 @@
 	let addPopoverOpen = $state(false);
 
 	let stats = $derived.by(() => {
-		const data = filteredCharacters ?? characters.data ?? [];
+		const data = filteredCharacters ?? visibleCharacters ?? [];
 		const total = data.length;
 
 		const roleCounts = new Map<string, number>();
@@ -282,6 +302,10 @@
 
 	async function handleDelete(id: Id<'characters'>): Promise<void> {
 		await client.mutation(api.charactersInternal.deleteCharacter, { id });
+	}
+
+	async function handleSetArchived(id: Id<'characters'>, archived: boolean): Promise<void> {
+		await client.mutation(api.charactersInternal.setArchived, { id, archived });
 	}
 
 	async function handleUpdateMeta(
@@ -489,7 +513,7 @@
 				<Card.Content class="px-4">
 					<p class="text-2xl font-bold">{stats.total}</p>
 					{#if hasActiveFilters}
-						<p class="text-xs text-muted-foreground">de {characters.data?.length ?? 0}</p>
+						<p class="text-xs text-muted-foreground">de {visibleCharacters?.length ?? 0}</p>
 					{/if}
 				</Card.Content>
 			</Card.Root>
@@ -583,6 +607,19 @@
 		</div>
 		<div class="flex flex-wrap items-center gap-2">
 			<Filter class="size-4 text-muted-foreground" />
+
+			<div class="inline-flex overflow-hidden rounded-md border">
+				{#each ARCHIVE_VIEW_OPTIONS as opt (opt.value)}
+					<button
+						class="px-3 py-1.5 text-sm transition-colors {archiveView === opt.value
+							? 'bg-primary text-primary-foreground'
+							: 'bg-background text-muted-foreground hover:bg-muted'}"
+						onclick={() => (archiveView = opt.value)}
+					>
+						{opt.label}
+					</button>
+				{/each}
+			</div>
 
 			<Popover.Root>
 				<Popover.Trigger>
@@ -912,7 +949,11 @@
 					{#each sortedCharacters ?? [] as char (char._id)}
 						{@const classColor =
 							char.classId != null ? (WOW_CLASS_COLORS_BY_ID[char.classId] ?? null) : null}
-						<tr class="border-b last:border-0 hover:bg-muted/30">
+						<tr
+							class="border-b last:border-0 hover:bg-muted/30 {char.archivedAt != null
+								? 'opacity-60'
+								: ''}"
+						>
 							<td class="px-3 py-1">
 								<input
 									type="text"
@@ -961,6 +1002,9 @@
 								<span class="font-medium">{char.name}</span><span class="text-muted-foreground"
 									>-{char.realm}</span
 								>
+								{#if char.archivedAt != null && archiveView === 'all'}
+									<Badge variant="outline" class="ml-1">Arquivado</Badge>
+								{/if}
 							</td>
 							<td class="px-3 py-2 text-right">{char.level ?? '—'}</td>
 							<td class="px-3 py-2">
@@ -1108,6 +1152,27 @@
 												: ''}"
 										/>
 									</Button>
+									{#if char.archivedAt != null}
+										<Button
+											variant="ghost"
+											size="icon"
+											class="size-7"
+											onclick={() => handleSetArchived(char._id, false)}
+											title="Restaurar para o roster"
+										>
+											<ArchiveRestore class="size-4" />
+										</Button>
+									{:else}
+										<Button
+											variant="ghost"
+											size="icon"
+											class="size-7"
+											onclick={() => handleSetArchived(char._id, true)}
+											title="Arquivar"
+										>
+											<Archive class="size-4" />
+										</Button>
+									{/if}
 									<Button
 										variant="ghost"
 										size="icon"
@@ -1121,6 +1186,13 @@
 							</td>
 						</tr>
 					{/each}
+					{#if !sortedCharacters?.length}
+						<tr>
+							<td colspan="15" class="px-3 py-6 text-center text-sm text-muted-foreground">
+								Nenhum personagem nesta visualiza&ccedil;&atilde;o.
+							</td>
+						</tr>
+					{/if}
 				</tbody>
 			</table>
 		</div>

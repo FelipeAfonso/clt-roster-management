@@ -42,7 +42,9 @@ export default defineSchema({
 				})
 			)
 		),
-		activity: v.optional(v.string())
+		activity: v.optional(v.string()),
+		// Presente = personagem arquivado (fora do roster ativo); ausente = ativo
+		archivedAt: v.optional(v.number())
 	}).index('by_nameSlug_realmSlug', ['nameSlug', 'realmSlug']),
 
 	discordChannelState: defineTable({

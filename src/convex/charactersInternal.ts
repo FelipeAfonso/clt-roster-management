@@ -61,6 +61,22 @@ export const updateCharacterMeta = mutation({
 	}
 });
 
+export const setArchived = mutation({
+	args: {
+		id: v.id('characters'),
+		archived: v.boolean()
+	},
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) {
+			throw new Error('Not authenticated');
+		}
+		await ctx.db.patch(args.id, {
+			archivedAt: args.archived ? Date.now() : undefined
+		});
+	}
+});
+
 export const deleteCharacter = mutation({
 	args: { id: v.id('characters') },
 	handler: async (ctx, args) => {
@@ -79,10 +95,13 @@ export const getById = internalQuery({
 	}
 });
 
+// Alimenta o syncAll (manual e cron); arquivados ficam de fora para não
+// gastar chamadas da Battle.net com quem saiu do roster.
 export const listAll = internalQuery({
 	args: {},
 	handler: async (ctx) => {
-		return await ctx.db.query('characters').collect();
+		const all = await ctx.db.query('characters').collect();
+		return all.filter((c) => c.archivedAt === undefined);
 	}
 });
 
